@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\FirebaseAuthController;
 use App\Http\Controllers\SocialAuthController;
 use Illuminate\Support\Facades\Route;
 
@@ -19,6 +20,9 @@ Route::prefix('auth')->group(function () {
     // Google OAuth
     Route::get('/google',          [SocialAuthController::class, 'redirectToGoogle']);
     Route::get('/google/callback', [SocialAuthController::class, 'handleGoogleCallback']);
+
+    // Firebase Auth (Google, Apple, etc.)
+    Route::post('/firebase', [FirebaseAuthController::class, 'login']);
 
     // Rotas protegidas
     Route::middleware('auth:sanctum')->group(function () {
