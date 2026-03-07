@@ -56,8 +56,16 @@ class FirebaseAuthController extends Controller
             ]
         );
 
-        $token = $user->createToken('api')->plainTextToken;
+        $user->tokens()->delete();
+        $accessToken  = $user->createToken('access_token', ['access'], now()->addMinutes(config('sanctum.expiration')))->plainTextToken;
+        $refreshToken = $user->createToken('refresh_token', ['refresh'], now()->addMinutes(config('sanctum.refresh_expiration')))->plainTextToken;
 
-        return response()->json(['token' => $token, 'user' => $user]);
+        return response()->json([
+            'access_token'  => $accessToken,
+            'refresh_token' => $refreshToken,
+            'token_type'    => 'Bearer',
+            'expires_in'    => config('sanctum.expiration') * 60,
+            'user'          => $user,
+        ]);
     }
 }

@@ -9,6 +9,22 @@ use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
+    private function issueTokens(User $user): array
+    {
+        $user->tokens()->delete();
+
+        $accessToken  = $user->createToken('access_token', ['access'], now()->addMinutes((int)config('sanctum.access_token_expiration')))->plainTextToken;
+        $refreshToken = $user->createToken('refresh_token', ['refresh'], now()->addMinutes((int)config('sanctum.refresh_expiration')))->plainTextToken;
+
+        return [
+            'access_token'  => $accessToken,
+            'refresh_token' => $refreshToken,
+            'token_type'    => 'Bearer',        
+            'expires_in'    => (int)config('sanctum.access_token_expiration') * 60,
+            'user'          => $user,
+        ];
+    }
+
     /**
      * @OA\Post(
      *     path="/auth/register",
@@ -49,9 +65,7 @@ class AuthController extends Controller
             'password' => Hash::make($validated['password']),
         ]);
 
-        $token = $user->createToken('api')->plainTextToken;
-
-        return response()->json(['token' => $token, 'user' => $user], 201);
+        return response()->json($this->issueTokens($user), 201);
     }
 
     /**
@@ -93,9 +107,37 @@ class AuthController extends Controller
             ]);
         }
 
-        $token = $user->createToken('api')->plainTextToken;
+        return response()->json($this->issueTokens($user));
+    }
 
-        return response()->json(['token' => $token, 'user' => $user]);
+    /**
+     * @OA\Post(
+     *     path="/auth/refresh",
+     *     tags={"Auth"},
+     *     summary="Renova o access token usando o refresh token",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Novos tokens gerados",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="access_token", type="string"),
+     *             @OA\Property(property="refresh_token", type="string"),
+     *             @OA\Property(property="token_type", type="string"),
+     *             @OA\Property(property="expires_in", type="integer")
+     *         )
+     *     ),
+     *     @OA\Response(response=401, description="Refresh token inválido ou expirado")
+     * )
+     */
+    public function refresh(Request $request)
+    {
+        $currentToken = $request->user()->currentAccessToken();
+
+        if (! in_array('refresh', $currentToken->abilities)) {
+            return response()->json(['message' => 'Use o refresh token para renovar o acesso.'], 401);
+        }
+
+        return response()->json($this->issueTokens($request->user()));
     }
 
     /**
@@ -127,6 +169,8 @@ class AuthController extends Controller
      */
     public function me(Request $request)
     {
-        return response()->json($request->user());
+        return response()->json([
+            'user' => $request->user(),
+        ]);
     }
 }
