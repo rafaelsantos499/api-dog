@@ -1,31 +1,31 @@
-FROM --platform=linux/amd64 php:8.4-fpm
+FROM php:8.4-fpm
 
-# Instala dependências do sistema
-ENV DEBIAN_FRONTEND=noninteractive
-RUN rm -rf /var/lib/apt/lists/* && apt-get update && apt-get install -y \
-    -o Dpkg::Options::="--force-confold" \
+# Instalar dependências do sistema
+RUN apt-get update && apt-get install -y \
     git \
     curl \
+    zip \
+    unzip \
     libpng-dev \
     libonig-dev \
     libxml2-dev \
-    libpq-dev \
-    zip \
-    unzip \
-    && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd \
-    && apt-get clean && rm -rf /var/lib/apt/lists/*
+    netcat-openbsd
 
-# Instala Composer
+# Instalar extensões do PHP
+RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
+
+# Instalar composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www
 
 COPY . .
 
-RUN composer install --no-dev --optimize-autoloader
+RUN composer install
 
-RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
+COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
-EXPOSE 9000
+ENTRYPOINT ["docker-entrypoint.sh"]
 
 CMD ["php-fpm"]

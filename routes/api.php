@@ -21,7 +21,7 @@ Route::prefix('auth')->group(function () {
     Route::get('/google',          [SocialAuthController::class, 'redirectToGoogle']);
     Route::get('/google/callback', [SocialAuthController::class, 'handleGoogleCallback']);
 
-    // Firebase Auth (Google, Apple, etc.)
+    // Firebase Auth (Google)
     Route::post('/firebase', [FirebaseAuthController::class, 'login']);
 
     // Rotas protegidas
