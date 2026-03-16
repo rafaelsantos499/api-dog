@@ -38,17 +38,12 @@
                                     "email": {
                                         "type": "string",
                                         "format": "email",
-                                        "example": "rafael@email.com"
+                                        "example": "rafael499@gmail.com"
                                     },
                                     "password": {
                                         "type": "string",
                                         "format": "password",
-                                        "example": "senha123"
-                                    },
-                                    "password_confirmation": {
-                                        "type": "string",
-                                        "format": "password",
-                                        "example": "senha123"
+                                        "example": "password"
                                     }
                                 },
                                 "type": "object"
@@ -101,12 +96,12 @@
                                     "email": {
                                         "type": "string",
                                         "format": "email",
-                                        "example": "rafael@email.com"
+                                        "example": "rafael499@gmail.com"
                                     },
                                     "password": {
                                         "type": "string",
                                         "format": "password",
-                                        "example": "senha123"
+                                        "example": "password"
                                     }
                                 },
                                 "type": "object"
@@ -137,6 +132,84 @@
                         "description": "Credenciais inválidas"
                     }
                 }
+            }
+        },
+        "/auth/refresh": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Renova o access token usando o refresh token",
+                "description": "Gera um novo access token e refresh token. O token de acesso antigo e a sessão correspondente são removidos. Se o refresh token estiver expirado, todos os tokens e sessões relacionados são removidos.",
+                "operationId": "f6c9683ed975ace7d035a09e6e2a9332",
+                "responses": {
+                    "200": {
+                        "description": "Novos tokens gerados",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "access_token": {
+                                            "type": "string",
+                                            "example": "eyJ0eXAiOiJKV1QiLCJhbGciOi..."
+                                        },
+                                        "refresh_token": {
+                                            "type": "string",
+                                            "example": "eyJ0eXAiOiJKV1QiLCJhbGciOi..."
+                                        },
+                                        "token_type": {
+                                            "type": "string",
+                                            "example": "Bearer"
+                                        },
+                                        "expires_in": {
+                                            "type": "integer",
+                                            "example": 3600
+                                        },
+                                        "user": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "name": {
+                                                    "type": "string",
+                                                    "example": "Rafael Santos"
+                                                },
+                                                "email": {
+                                                    "type": "string",
+                                                    "example": "rafael@email.com"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Refresh token inválido ou expirado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Refresh token expirado. Faça login novamente."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             }
         },
         "/auth/logout": {
@@ -181,6 +254,57 @@
                         "bearerAuth": []
                     }
                 ]
+            }
+        },
+        "/auth/firebase": {
+            "post": {
+                "tags": [
+                    "Auth Firebase"
+                ],
+                "summary": "Login com Firebase (Google, Apple, etc.)",
+                "operationId": "c206d385001a81d6299dd727b494bf3f",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "id_token"
+                                ],
+                                "properties": {
+                                    "id_token": {
+                                        "description": "Token gerado pelo Firebase SDK no frontend",
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Login realizado com sucesso",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "token": {
+                                            "type": "string"
+                                        },
+                                        "user": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Token inválido"
+                    }
+                }
             }
         },
         "/auth/google": {
@@ -249,6 +373,96 @@
                     }
                 }
             }
+        },
+        "/user/photos/upload": {
+            "post": {
+                "tags": [
+                    "UserPhoto"
+                ],
+                "summary": "Upload user photos (original, feed, thumb)",
+                "operationId": "cea4ecff1bdd6125270d4029360251a6",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "required": [
+                                    "original",
+                                    "feed",
+                                    "thumb",
+                                    "access"
+                                ],
+                                "properties": {
+                                    "original": {
+                                        "description": "Original photo",
+                                        "type": "string",
+                                        "format": "binary"
+                                    },
+                                    "feed": {
+                                        "description": "Feed photo",
+                                        "type": "string",
+                                        "format": "binary"
+                                    },
+                                    "thumb": {
+                                        "description": "Thumbnail photo",
+                                        "type": "string",
+                                        "format": "binary"
+                                    },
+                                    "access": {
+                                        "type": "string",
+                                        "enum": [
+                                            "public",
+                                            "private"
+                                        ]
+                                    },
+                                    "weight": {
+                                        "type": "number",
+                                        "format": "float"
+                                    },
+                                    "age": {
+                                        "type": "integer"
+                                    },
+                                    "title": {
+                                        "type": "string"
+                                    },
+                                    "description": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Photo uploaded successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "photo": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
         }
     },
     "components": {
@@ -266,8 +480,16 @@
             "description": "Auth"
         },
         {
+            "name": "Auth Firebase",
+            "description": "Auth Firebase"
+        },
+        {
             "name": "Auth Google",
             "description": "Auth Google"
+        },
+        {
+            "name": "UserPhoto",
+            "description": "UserPhoto"
         }
     ]
 }

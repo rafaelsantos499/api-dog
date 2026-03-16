@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\FirebaseAuthController;
 use App\Http\Controllers\SocialAuthController;
+use App\Http\Controllers\UserPhotoController;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Support\Facades\Route;
 
@@ -15,7 +16,6 @@ Route::get('/ping', function () {
 
 // Autenticação email/senha
 Route::prefix('auth')->group(function () {
-    // @OA\Post(path="/auth/register", tags={"Auth"}, summary="Registrar novo usuário")
     Route::post('/register', [AuthController::class, 'register']);
 
     // @OA\Post(path="/auth/login", tags={"Auth"}, summary="Login com email e senha")
@@ -29,13 +29,17 @@ Route::prefix('auth')->group(function () {
     // @OA\Post(path="/auth/firebase", tags={"Auth"}, summary="Login com Firebase (Google)")
     Route::post('/firebase', [FirebaseAuthController::class, 'login']);
 
+
     // Rotas protegidas
-    Route::middleware('auth:sanctum')->group(function () {
-        // @OA\Post(path="/auth/refresh", tags={"Auth"}, summary="Renova o access token usando o refresh token")
-        Route::post('/refresh', [AuthController::class, 'refresh']);
-        // @OA\Post(path="/auth/logout", tags={"Auth"}, summary="Logout (revoga o token atual)")
-        Route::post('/logout',  [AuthController::class, 'logout']);
-        // @OA\Get(path="/auth/me", tags={"Auth"}, summary="Retorna o usuário autenticado")
-        Route::get('/me',       [AuthController::class, 'me']);
+        Route::middleware('auth:sanctum')->group(function () {
+            // @OA\Post(path="/auth/refresh", tags={"Auth"}, summary="Renova o access token usando o refresh token")
+            Route::post('/refresh', [AuthController::class, 'refresh']);
+            // @OA\Post(path="/auth/logout", tags={"Auth"}, summary="Logout (revoga o token atual)")
+            Route::post('/logout',  [AuthController::class, 'logout']);
+            // @OA\Get(path="/auth/me", tags={"Auth"}, summary="Retorna o usurio autenticado")
+            Route::get('/me',       [AuthController::class, 'me']);
+
+            // @OA\Get(path="/auth/me", tags={"Auth"}, summary="Retorna o usurio autenticado")
+            Route::post('/user/photos/upload', [UserPhotoController::class, 'uploadPhoto']);
+        });
     });
-});
