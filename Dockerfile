@@ -7,12 +7,17 @@ RUN apt-get update && apt-get install -y \
     zip \
     unzip \
     libpng-dev \
+    libjpeg-dev \
+    libfreetype6-dev \
+    libwebp-dev \
     libonig-dev \
     libxml2-dev \
-    netcat-openbsd
+    netcat-openbsd \
+ && rm -rf /var/lib/apt/lists/*
 
-# Instalar extensões do PHP
-RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
+# Configurar e instalar extensões do PHP (GD com suporte a jpeg/webp/freetype)
+RUN docker-php-ext-configure gd --with-jpeg --with-freetype --with-webp \
+ && docker-php-ext-install -j"$(nproc)" pdo_mysql mbstring exif pcntl bcmath gd
 
 # Instalar composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer

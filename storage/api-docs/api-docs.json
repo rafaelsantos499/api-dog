@@ -27,8 +27,7 @@
                                 "required": [
                                     "name",
                                     "email",
-                                    "password",
-                                    "password_confirmation"
+                                    "password"
                                 ],
                                 "properties": {
                                     "name": {
@@ -379,7 +378,7 @@
                 "tags": [
                     "UserPhoto"
                 ],
-                "summary": "Upload user photos (original, feed, thumb)",
+                "summary": "Upload user photo",
                 "operationId": "cea4ecff1bdd6125270d4029360251a6",
                 "requestBody": {
                     "required": true,
@@ -387,33 +386,17 @@
                         "multipart/form-data": {
                             "schema": {
                                 "required": [
-                                    "original",
-                                    "feed",
-                                    "thumb",
-                                    "access"
+                                    "photo",
+                                    "access",
+                                    "weight",
+                                    "age",
+                                    "title"
                                 ],
                                 "properties": {
-                                    "original": {
-                                        "description": "Original photo",
+                                    "photo": {
+                                        "description": "Photo file",
                                         "type": "string",
                                         "format": "binary"
-                                    },
-                                    "feed": {
-                                        "description": "Feed photo",
-                                        "type": "string",
-                                        "format": "binary"
-                                    },
-                                    "thumb": {
-                                        "description": "Thumbnail photo",
-                                        "type": "string",
-                                        "format": "binary"
-                                    },
-                                    "access": {
-                                        "type": "string",
-                                        "enum": [
-                                            "public",
-                                            "private"
-                                        ]
                                     },
                                     "weight": {
                                         "type": "number",

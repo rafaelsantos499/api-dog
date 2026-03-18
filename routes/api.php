@@ -31,15 +31,17 @@ Route::prefix('auth')->group(function () {
 
 
     // Rotas protegidas
-        Route::middleware('auth:sanctum')->group(function () {
-            // @OA\Post(path="/auth/refresh", tags={"Auth"}, summary="Renova o access token usando o refresh token")
-            Route::post('/refresh', [AuthController::class, 'refresh']);
-            // @OA\Post(path="/auth/logout", tags={"Auth"}, summary="Logout (revoga o token atual)")
-            Route::post('/logout',  [AuthController::class, 'logout']);
-            // @OA\Get(path="/auth/me", tags={"Auth"}, summary="Retorna o usurio autenticado")
-            Route::get('/me',       [AuthController::class, 'me']);
-
-            // @OA\Get(path="/auth/me", tags={"Auth"}, summary="Retorna o usurio autenticado")
-            Route::post('/user/photos/upload', [UserPhotoController::class, 'uploadPhoto']);
-        });
+    Route::middleware('auth:sanctum')->group(function () {
+        // @OA\Post(path="/auth/refresh", tags={"Auth"}, summary="Renova o access token usando o refresh token")
+        Route::post('/refresh', [AuthController::class, 'refresh']);
+        // @OA\Post(path="/auth/logout", tags={"Auth"}, summary="Logout (revoga o token atual)")
+        Route::post('/logout',  [AuthController::class, 'logout']);
+        // @OA\Get(path="/auth/me", tags={"Auth"}, summary="Retorna o usurio autenticado")
+        Route::get('/me',       [AuthController::class, 'me']);
     });
+});
+
+Route::middleware('auth:sanctum')->prefix('photos')->group(function () {
+    // @OA\Post(path="/user/photos/upload", tags={"UserPhoto"}, summary="Upload user photos (original, feed, thumb)")
+    Route::post('upload', [UserPhotoController::class, 'uploadPhoto']);
+});
