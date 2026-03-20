@@ -54,7 +54,7 @@ class Posts extends Model
     }
 
     /**
-     * Use `uuid` for route model binding instead of numeric `id`.
+     * usa o `uuid` para o binding de rota em vez do `id` numérico.
      */
     public function getRouteKeyName(): string
     {
