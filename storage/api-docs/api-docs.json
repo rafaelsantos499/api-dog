@@ -498,6 +498,105 @@
                     }
                 ]
             }
+        },
+        "/photos/{photo}": {
+            "get": {
+                "tags": [
+                    "UserPhoto"
+                ],
+                "summary": "Get a single user photo by ID or UUID",
+                "description": "Show a single photo.",
+                "operationId": "ff5c8a95307df67ecd7549629bd356ce",
+                "parameters": [
+                    {
+                        "name": "photo",
+                        "in": "path",
+                        "description": "ID ou UUID do post (photo)",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Photo found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "photo": {
+                                            "properties": {
+                                                "uuid": {
+                                                    "type": "string"
+                                                },
+                                                "user_id": {
+                                                    "type": "integer"
+                                                },
+                                                "original_path": {
+                                                    "type": "string"
+                                                },
+                                                "feed_path": {
+                                                    "type": "string"
+                                                },
+                                                "thumb_path": {
+                                                    "type": "string"
+                                                },
+                                                "original_url": {
+                                                    "type": "string"
+                                                },
+                                                "feed_url": {
+                                                    "type": "string"
+                                                },
+                                                "thumb_url": {
+                                                    "type": "string"
+                                                },
+                                                "weight": {
+                                                    "type": "number"
+                                                },
+                                                "age": {
+                                                    "type": "integer"
+                                                },
+                                                "title": {
+                                                    "type": "string"
+                                                },
+                                                "description": {
+                                                    "type": "string"
+                                                },
+                                                "is_published": {
+                                                    "type": "boolean"
+                                                },
+                                                "published_at": {
+                                                    "type": "string",
+                                                    "format": "date-time"
+                                                },
+                                                "created_at": {
+                                                    "type": "string",
+                                                    "format": "date-time"
+                                                },
+                                                "updated_at": {
+                                                    "type": "string",
+                                                    "format": "date-time"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Photo not found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
         }
     },
     "components": {

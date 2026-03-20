@@ -42,6 +42,40 @@ Route::prefix('auth')->group(function () {
 });
 
 Route::middleware('auth:sanctum')->prefix('photos')->group(function () {
-    // @OA\Post(path="/user/photos/upload", tags={"UserPhoto"}, summary="Upload user photos (original, feed, thumb)")
+    /**
+     * @OA\Post(
+     *     path="/photos/upload",
+     *     tags={"UserPhoto"},
+     *     summary="Upload user photos (original, feed, thumb)",
+     *     security={{"bearerAuth":{}}}
+     * )
+     *
+     * @OA\Get(
+     *     path="/photos/{photo}",
+     *     tags={"UserPhoto"},
+     *     summary="Get a single user photo by ID or UUID",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="photo", in="path", required=true, @OA\Schema(type="string"))
+     * )
+     *
+     * @OA\Put(
+     *     path="/photos/{photo}",
+     *     tags={"UserPhoto"},
+     *     summary="Update a photo metadata",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="photo", in="path", required=true, @OA\Schema(type="string"))
+     * )
+     *
+     * @OA\Delete(
+     *     path="/photos/{photo}",
+     *     tags={"UserPhoto"},
+     *     summary="Delete a photo",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="photo", in="path", required=true, @OA\Schema(type="string"))
+     * )
+     */
     Route::post('upload', [UserPhotoController::class, 'uploadPhoto']);
+    Route::get('{photo}', [UserPhotoController::class, 'show']);
+    Route::put('{photo}', [UserPhotoController::class, 'update']);
+    Route::delete('{photo}', [UserPhotoController::class, 'destroy']);
 });

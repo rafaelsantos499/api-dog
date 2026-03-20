@@ -53,6 +53,14 @@ class Posts extends Model
         return $this->belongsTo(User::class);
     }
 
+    /**
+     * Use `uuid` for route model binding instead of numeric `id`.
+     */
+    public function getRouteKeyName(): string
+    {
+        return 'uuid';
+    }
+
     public function getOriginalUrlAttribute(): ?string
     {
         if (empty($this->original_path)) {

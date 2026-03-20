@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Services\ImageService;
 use App\Services\StorageService;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 class UserPhotoController extends Controller
 {   
     /**
@@ -160,10 +161,118 @@ class UserPhotoController extends Controller
             throw $e;
         }
 
+        $photoResponse = $photo->fresh()->makeHidden('id');
         return response()->json([
             'message' => 'Photo uploaded successfully.',
-            'photo'   => $photo->fresh(),
+            'photo'   => $photoResponse,
         ], 201);
+    }
+
+    /**
+     * Show a single photo.
+     *
+     * @OA\Get(
+     *     path="/photos/{photo}",
+     *     tags={"UserPhoto"},
+     *     summary="Get a single user photo by ID or UUID",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="photo",
+     *         in="path",
+     *         required=true,
+     *         description="ID ou UUID do post (photo)",
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Photo found",
+     *         @OA\JsonContent(
+     *             @OA\Property(
+     *                 property="photo",
+     *                 type="object",
+     *                 @OA\Property(property="uuid", type="string"),
+     *                 @OA\Property(property="user_id", type="integer"),
+     *                 @OA\Property(property="original_path", type="string"),
+     *                 @OA\Property(property="feed_path", type="string"),
+     *                 @OA\Property(property="thumb_path", type="string"),
+     *                 @OA\Property(property="original_url", type="string"),
+     *                 @OA\Property(property="feed_url", type="string"),
+     *                 @OA\Property(property="thumb_url", type="string"),
+     *                 @OA\Property(property="weight", type="number"),
+     *                 @OA\Property(property="age", type="integer"),
+     *                 @OA\Property(property="title", type="string"),
+     *                 @OA\Property(property="description", type="string"),
+     *                 @OA\Property(property="is_published", type="boolean"),
+     *                 @OA\Property(property="published_at", type="string", format="date-time"),
+     *                 @OA\Property(property="created_at", type="string", format="date-time"),
+     *                 @OA\Property(property="updated_at", type="string", format="date-time")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Photo not found"
+     *     )
+     * )
+     */
+    public function show(Posts $photo)
+    {
+        return response()->json([
+            'photo' => $photo->makeHidden('id'),
+        ]);
+    }
+    
+    public function update(Request $request, Posts $photo)
+    {
+        $request->validate([
+            'weight'      => 'nullable|numeric|min:0',
+            'age'         => 'nullable|integer|min:0',
+            'title'       => 'nullable|string|max:255',
+            'description' => 'nullable|string|max:2000',
+            'is_published'=> 'nullable|boolean',
+        ]);
+
+        $user = $request->user();
+        if ($user->id !== $photo->user_id) {
+            return response()->json(['message' => 'Forbidden'], 403);
+        }
+
+        $photo->update($request->only(['weight', 'age', 'title', 'description', 'is_published']));
+
+        return response()->json([
+            'message' => 'Photo updated successfully.',
+            'photo'   => $photo->fresh()->makeHidden('id'),
+        ]);
+    }
+
+    /**
+     * Delete a photo and its stored files.
+     */
+    public function destroy(Request $request, Posts $photo)
+    {
+        $user = $request->user();
+        if ($user->id !== $photo->user_id) {
+            return response()->json(['message' => 'Forbidden'], 403);
+        }
+
+        // remove files from storage if exist (uses configured disk)
+        $paths = array_filter([
+            $photo->original_path,
+            $photo->feed_path,
+            $photo->thumb_path,
+        ]);
+
+        foreach ($paths as $p) {
+            try {
+                Storage::disk(config('filesystems.default'))->delete($p);
+            } catch (\Throwable $_) {
+                // ignore individual delete errors
+            }
+        }
+
+        $photo->delete();
+
+        return response()->json(['message' => 'Photo deleted successfully.']);
     }
               
 }
