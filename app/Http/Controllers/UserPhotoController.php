@@ -222,6 +222,47 @@ class UserPhotoController extends Controller
         ]);
     }
     
+    /**
+     * Update a photo's metadata (title, description, weight, age, is_published).
+     *
+     * @OA\Put(
+     *     path="/photos/{photo}",
+     *     tags={"UserPhoto"},
+     *     summary="Update a photo metadata",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="photo",
+     *         in="path",
+     *         required=true,
+     *         description="ID or UUID of the photo",
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\MediaType(
+     *             mediaType="application/json",
+     *             @OA\Schema(
+     *                 type="object",
+     *                 @OA\Property(property="weight", type="number", format="float"),
+     *                 @OA\Property(property="age", type="integer"),
+     *                 @OA\Property(property="title", type="string", maxLength=255),
+     *                 @OA\Property(property="description", type="string", maxLength=2000),
+     *                 @OA\Property(property="is_published", type="boolean")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Photo updated successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string"),
+     *             @OA\Property(property="photo", type="object")
+     *         )
+     *     ),
+     *     @OA\Response(response=403, description="Forbidden"),
+     *     @OA\Response(response=422, description="Validation error")
+     * )
+     */
     public function update(Request $request, Posts $photo)
     {
         $request->validate([
