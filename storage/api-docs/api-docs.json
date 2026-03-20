@@ -373,13 +373,14 @@
                 }
             }
         },
-        "/user/photos/upload": {
+        "/photos/upload": {
             "post": {
                 "tags": [
                     "UserPhoto"
                 ],
                 "summary": "Upload user photo",
-                "operationId": "cea4ecff1bdd6125270d4029360251a6",
+                "description": "Upload a user photo.",
+                "operationId": "e6e4a562028953cec523698f4dfce475",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -387,29 +388,32 @@
                             "schema": {
                                 "required": [
                                     "photo",
-                                    "access",
-                                    "weight",
-                                    "age",
                                     "title"
                                 ],
                                 "properties": {
                                     "photo": {
-                                        "description": "Photo file",
+                                        "description": "Photo file (jpeg, png, jpg, gif, webp, max 5MB)",
                                         "type": "string",
                                         "format": "binary"
                                     },
                                     "weight": {
+                                        "description": "Weight (optional)",
                                         "type": "number",
                                         "format": "float"
                                     },
                                     "age": {
+                                        "description": "Age (optional)",
                                         "type": "integer"
                                     },
                                     "title": {
-                                        "type": "string"
+                                        "description": "Title",
+                                        "type": "string",
+                                        "maxLength": 255
                                     },
                                     "description": {
-                                        "type": "string"
+                                        "description": "Description (optional)",
+                                        "type": "string",
+                                        "maxLength": 2000
                                     }
                                 },
                                 "type": "object"
@@ -425,9 +429,42 @@
                                 "schema": {
                                     "properties": {
                                         "message": {
-                                            "type": "string"
+                                            "type": "string",
+                                            "example": "Photo uploaded successfully."
                                         },
                                         "photo": {
+                                            "properties": {
+                                                "original_path": {
+                                                    "type": "string"
+                                                },
+                                                "feed_path": {
+                                                    "type": "string"
+                                                },
+                                                "thumb_path": {
+                                                    "type": "string"
+                                                },
+                                                "original_url": {
+                                                    "type": "string"
+                                                },
+                                                "feed_url": {
+                                                    "type": "string"
+                                                },
+                                                "thumb_url": {
+                                                    "type": "string"
+                                                },
+                                                "weight": {
+                                                    "type": "number"
+                                                },
+                                                "age": {
+                                                    "type": "integer"
+                                                },
+                                                "title": {
+                                                    "type": "string"
+                                                },
+                                                "description": {
+                                                    "type": "string"
+                                                }
+                                            },
                                             "type": "object"
                                         }
                                     },
@@ -437,7 +474,22 @@
                         }
                     },
                     "422": {
-                        "description": "Validation error"
+                        "description": "Validation error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "errors": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [

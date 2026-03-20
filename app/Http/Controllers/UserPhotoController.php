@@ -8,10 +8,12 @@ use App\Services\ImageService;
 use App\Services\StorageService;
 use Illuminate\Http\UploadedFile;
 class UserPhotoController extends Controller
-{
+{   
     /**
+     * Upload a user photo.
+     *
      * @OA\Post(
-     *     path="/user/photos/upload",
+     *     path="/photos/upload",
      *     tags={"UserPhoto"},
      *     summary="Upload user photo",
      *     security={{"bearerAuth":{}}},
@@ -20,12 +22,36 @@ class UserPhotoController extends Controller
      *         @OA\MediaType(
      *             mediaType="multipart/form-data",
      *             @OA\Schema(
-     *                 required={"photo","access","weight","age","title"},
-     *                 @OA\Property(property="photo", type="string", format="binary", description="Photo file"),
-     *                 @OA\Property(property="weight", type="number", format="float"),
-     *                 @OA\Property(property="age", type="integer"),
-     *                 @OA\Property(property="title", type="string"),
-     *                 @OA\Property(property="description", type="string")
+     *                 required={"photo", "title"},
+     *                 @OA\Property(
+     *                     property="photo",
+     *                     type="string",
+     *                     format="binary",
+     *                     description="Photo file (jpeg, png, jpg, gif, webp, max 5MB)"
+     *                 ),
+     *                 @OA\Property(
+     *                     property="weight",
+     *                     type="number",
+     *                     format="float",
+     *                     description="Weight (optional)"
+     *                 ),
+     *                 @OA\Property(
+     *                     property="age",
+     *                     type="integer",
+     *                     description="Age (optional)"
+     *                 ),
+     *                 @OA\Property(
+     *                     property="title",
+     *                     type="string",
+     *                     maxLength=255,
+     *                     description="Title"
+     *                 ),
+     *                 @OA\Property(
+     *                     property="description",
+     *                     type="string",
+     *                     maxLength=2000,
+     *                     description="Description (optional)"
+     *                 )
      *             )
      *         )
      *     ),
@@ -33,30 +59,48 @@ class UserPhotoController extends Controller
      *         response=201,
      *         description="Photo uploaded successfully",
      *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string"),
-     *             @OA\Property(property="photo", type="object")
+     *             @OA\Property(property="message", type="string", example="Photo uploaded successfully."),
+     *             @OA\Property(
+     *                 property="photo",
+     *                 type="object",     *                
+     *                 @OA\Property(property="original_path", type="string"),
+     *                 @OA\Property(property="feed_path", type="string"),
+     *                 @OA\Property(property="thumb_path", type="string"),
+     *                 @OA\Property(property="original_url", type="string"),
+     *                 @OA\Property(property="feed_url", type="string"),
+     *                 @OA\Property(property="thumb_url", type="string"),
+     *                 @OA\Property(property="weight", type="number"),
+     *                 @OA\Property(property="age", type="integer"),
+     *                 @OA\Property(property="title", type="string"),
+     *                 @OA\Property(property="description", type="string"),
+     *             )
      *         )
      *     ),
-     *     @OA\Response(response=422, description="Validation error")
+     *     @OA\Response(
+     *         response=422,
+     *         description="Validation error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string"),
+     *             @OA\Property(property="errors", type="object")
+     *         )
+     *     )
      * )
      */
     public function uploadPhoto(Request $request, ImageService $imageService, StorageService $storageService)
     {
-        // Validação mínima (ajuste conforme necessário)
-        // $request->validate([
-        //     'photo'       => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
-        //     'weight'      => 'nullable|numeric|min:0',
-        //     'age'         => 'nullable|integer|min:0',
-        //     'title'       => 'nullable|string|max:255',
-        //     'description' => 'nullable|string|max:2000',
-        // ]);
+        $request->validate([
+            'photo'       => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
+            'weight'      => 'nullable|numeric|min:0',
+            'age'         => 'nullable|integer|min:0',
+            'title'       => 'required|string|max:255',
+            'description' => 'nullable|string|max:2000',
+        ]);
 
         // Obtém o usuário autenticado (rota está protegida por `auth:sanctum`)
         $user = $request->user();
         $userId = $user->id;
         $userUuid = $user->uuid; 
 
-        // dd($userId);
         // Processa e salva as imagens em três resoluções usando Intervention Image
         
         $uploaded = $request->file('photo');
@@ -76,17 +120,15 @@ class UserPhotoController extends Controller
             'description'   => $request->input('description'),
         ]);
 
-        // Ensure we have a stable identifier for storage paths.
-        // If uuid was generated by the DB default, refresh the model so Eloquent has it.
+        
         if (empty($photo->uuid)) {
             try {
                 $photo->refresh();
             } catch (\Throwable $_) {
-                // ignore refresh failure; fallback to numeric id below
+              
             }
         }
 
-        // Prefer UUID when available, fallback to numeric id to avoid empty path segments
         $photoId = $photo->uuid ?? $photo->id;
 
         // paths baseadas em user + photo id
