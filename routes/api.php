@@ -79,3 +79,6 @@ Route::middleware('auth:sanctum')->prefix('photos')->group(function () {
     Route::put('{photo}', [UserPhotoController::class, 'update']);
     Route::delete('{photo}', [UserPhotoController::class, 'destroy']);
 });
+
+// Public feed: paginated, most recent first
+Route::get('/feed', [\App\Http\Controllers\FeedController::class, 'index']);
