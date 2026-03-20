@@ -285,9 +285,32 @@ class UserPhotoController extends Controller
             'photo'   => $photo->fresh()->makeHidden('id'),
         ]);
     }
-
+   
     /**
      * Delete a photo and its stored files.
+     *
+     * @OA\Delete(
+     *     path="/photos/{photo}",
+     *     tags={"UserPhoto"},
+     *     summary="Delete a photo",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="photo",
+     *         in="path",
+     *         required=true,
+     *         description="ID or UUID of the photo",
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Photo deleted successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Photo deleted successfully.")
+     *         )
+     *     ),
+     *     @OA\Response(response=403, description="Forbidden"),
+     *     @OA\Response(response=404, description="Photo not found")
+     * )
      */
     public function destroy(Request $request, Posts $photo)
     {
@@ -296,7 +319,6 @@ class UserPhotoController extends Controller
             return response()->json(['message' => 'Forbidden'], 403);
         }
 
-        // remove files from storage if exist (uses configured disk)
         $paths = array_filter([
             $photo->original_path,
             $photo->feed_path,
@@ -307,7 +329,7 @@ class UserPhotoController extends Controller
             try {
                 Storage::disk(config('filesystems.default'))->delete($p);
             } catch (\Throwable $_) {
-                // ignore individual delete errors
+                
             }
         }
 
