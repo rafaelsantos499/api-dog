@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use App\Models\Posts;
 
 class FeedController extends Controller
@@ -66,26 +67,35 @@ class FeedController extends Controller
         $perPage = (int) $request->query('per_page', 15);
         $perPage = $perPage > 0 && $perPage <= 100 ? $perPage : 15;
 
-        $query = Posts::query()
-            ->where('is_published', true)
-            ->whereNotNull('feed_path')
-            ->orderByDesc('published_at')
-            ->orderByDesc('created_at')
-            ->select(['uuid', 'feed_path']);
+        $page = (int) $request->query('page', 1);
+        $cacheKey = sprintf('feed:perpage:%d:page:%d', $perPage, $page);
 
-        $paginator = $query->paginate($perPage)->withQueryString();
+        $payload = Cache::store('redis')->get($cacheKey);
+        if (!$payload) {
+            $query = Posts::query()
+                ->where('is_published', true)
+                ->whereNotNull('feed_path')
+                ->orderByDesc('published_at')
+                ->orderByDesc('created_at')
+                ->select(['uuid', 'feed_path']);
 
-        $svc = app(\App\Services\StorageService::class);
+            $paginator = $query->paginate($perPage)->withQueryString();
 
-        $collection = $paginator->getCollection()->transform(function ($item) use ($svc) {
-            return [
-                'uuid' => $item->uuid,
-                'feed_url' => $item->feed_path ? $svc->url($item->feed_path) : null,
-            ];
-        });
+            $svc = app(\App\Services\StorageService::class);
 
-        $paginator->setCollection($collection);
+            $collection = $paginator->getCollection()->transform(function ($item) use ($svc) {
+                return [
+                    'uuid' => $item->uuid,
+                    'feed_url' => $item->feed_path ? $svc->url($item->feed_path) : null,
+                ];
+            });
 
-        return response()->json($paginator);
+            $paginator->setCollection($collection);
+
+            $payload = $paginator->toArray();
+            Cache::store('redis')->put($cacheKey, $payload, 15);
+        }
+
+        return response()->json($payload);
     }
 }
