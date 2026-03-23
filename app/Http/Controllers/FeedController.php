@@ -67,32 +67,66 @@ class FeedController extends Controller
         $perPage = (int) $request->query('per_page', 15);
         $perPage = $perPage > 0 && $perPage <= 100 ? $perPage : 15;
 
-        $page = (int) $request->query('page', 1);
-        $cacheKey = sprintf('feed:perpage:%d:page:%d', $perPage, $page);
+        $cursor = $request->query('cursor');
+        $cursorLabel = $cursor ? $cursor : 'start';
+        $cacheKey = sprintf('feed:perpage:%d:cursor:%s', $perPage, $cursorLabel);
 
         $payload = Cache::store('redis')->get($cacheKey);
         if (!$payload) {
             $query = Posts::query()
                 ->where('is_published', true)
                 ->whereNotNull('feed_path')
-                ->orderByDesc('published_at')
-                ->orderByDesc('created_at')
-                ->select(['uuid', 'feed_path']);
+                ->select(['uuid', 'feed_path', 'published_at']);
 
-            $paginator = $query->paginate($perPage)->withQueryString();
+            if ($cursor) {
+                try {
+                    $decoded = base64_decode($cursor, true);
+                    if ($decoded !== false && strpos($decoded, '|') !== false) {
+                        [$cursorPublishedAt, $cursorId] = explode('|', $decoded, 2);
+                        if ($cursorPublishedAt !== '' && $cursorId !== '') {
+                            $query->where(function ($q) use ($cursorPublishedAt, $cursorId) {
+                                $q->where('published_at', '<', $cursorPublishedAt)
+                                  ->orWhere(function ($q2) use ($cursorPublishedAt, $cursorId) {
+                                      $q2->where('published_at', $cursorPublishedAt)
+                                         ->where('id', '<', (int) $cursorId);
+                                  });
+                            });
+                        }
+                    }
+                } catch (\Throwable $e) {
+                    
+                }
+            }
+
+            $query->orderByDesc('published_at')->orderByDesc('id')->limit($perPage);
+
+            $items = $query->get();
 
             $svc = app(\App\Services\StorageService::class);
 
-            $collection = $paginator->getCollection()->transform(function ($item) use ($svc) {
+            $data = $items->map(function ($item) use ($svc) {
                 return [
                     'uuid' => $item->uuid,
                     'feed_url' => $item->feed_path ? $svc->url($item->feed_path) : null,
+                    'published_at' => $item->published_at ? $item->published_at->toDateTimeString() : null,
+                    'id' => $item->id,
                 ];
-            });
+            })->toArray();
 
-            $paginator->setCollection($collection);
+            $nextCursor = null;
+            if (count($data) === $perPage) {
+                $last = end($data);
+                $nextCursor = base64_encode(sprintf('%s|%s', $last['published_at'], $last['id']));
+            }
 
-            $payload = $paginator->toArray();
+            $payload = [
+                'data' => $data,
+                'meta' => [
+                    'per_page' => $perPage,
+                    'next_cursor' => $nextCursor,
+                ],
+            ];
+
             Cache::store('redis')->put($cacheKey, $payload, 15);
         }
 
