@@ -260,32 +260,32 @@
                 "tags": [
                     "Feed"
                 ],
-                "summary": "Get paginated feed of posts (uuid + feed_path)",
-                "description": "Return paginated feed.",
+                "summary": "Retorna o feed paginado por cursor",
+                "description": "Retorna o feed paginado usando paginação por cursor.\n\nUso do cursor: o endpoint retorna `meta.next_cursor` (base64 de \"published_at|id\").\nOs clientes devem enviar esse valor no parâmetro de query `cursor` para obter a próxima página.",
                 "operationId": "3e95d1c6bd28cdb38a1412d0e31d9c47",
                 "parameters": [
                     {
                         "name": "per_page",
                         "in": "query",
-                        "description": "Items per page (max 100)",
+                        "description": "Itens por página (máx 100)",
                         "schema": {
                             "type": "integer",
                             "default": 15
                         }
                     },
                     {
-                        "name": "page",
+                        "name": "cursor",
                         "in": "query",
-                        "description": "Page number",
+                        "description": "Token opaco retornado em `meta.next_cursor` da resposta anterior. Formato: base64('published_at|id'). Envie para buscar a próxima página.",
                         "schema": {
-                            "type": "integer",
-                            "default": 1
+                            "type": "string",
+                            "nullable": true
                         }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "Paginated feed",
+                        "description": "Feed paginado por cursor",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -297,8 +297,16 @@
                                                     "uuid": {
                                                         "type": "string"
                                                     },
-                                                    "feed_path": {
-                                                        "type": "string"
+                                                    "feed_url": {
+                                                        "type": "string",
+                                                        "nullable": true
+                                                    },
+                                                    "published_at": {
+                                                        "type": "string",
+                                                        "format": "date-time"
+                                                    },
+                                                    "id": {
+                                                        "type": "integer"
                                                     }
                                                 },
                                                 "type": "object"
@@ -306,34 +314,11 @@
                                         },
                                         "meta": {
                                             "properties": {
-                                                "current_page": {
-                                                    "type": "integer"
-                                                },
                                                 "per_page": {
                                                     "type": "integer"
                                                 },
-                                                "total": {
-                                                    "type": "integer"
-                                                },
-                                                "last_page": {
-                                                    "type": "integer"
-                                                }
-                                            },
-                                            "type": "object"
-                                        },
-                                        "links": {
-                                            "properties": {
-                                                "first": {
-                                                    "type": "string"
-                                                },
-                                                "last": {
-                                                    "type": "string"
-                                                },
-                                                "prev": {
-                                                    "type": "string",
-                                                    "nullable": true
-                                                },
-                                                "next": {
+                                                "next_cursor": {
+                                                    "description": "Token base64 para buscar a próxima página; null quando não houver mais itens",
                                                     "type": "string",
                                                     "nullable": true
                                                 }

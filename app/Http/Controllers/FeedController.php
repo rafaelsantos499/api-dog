@@ -10,27 +10,30 @@ class FeedController extends Controller
 {
     
     /**
-     * Return paginated feed.
+     * Retorna o feed paginado usando paginação por cursor.
+     *
+     * Uso do cursor: o endpoint retorna `meta.next_cursor` (base64 de "published_at|id").
+     * Os clientes devem enviar esse valor no parâmetro de query `cursor` para obter a próxima página.
      *
      * @OA\Get(
      *     path="/feed",
      *     tags={"Feed"},
-     *     summary="Get paginated feed of posts (uuid + feed_path)",
+     *     summary="Retorna o feed paginado por cursor",
      *     @OA\Parameter(
      *         name="per_page",
      *         in="query",
-     *         description="Items per page (max 100)",
+     *         description="Itens por página (máx 100)",
      *         @OA\Schema(type="integer", default=15)
      *     ),
      *     @OA\Parameter(
-     *         name="page",
+     *         name="cursor",
      *         in="query",
-     *         description="Page number",
-     *         @OA\Schema(type="integer", default=1)
+     *         description="Token opaco retornado em `meta.next_cursor` da resposta anterior. Formato: base64('published_at|id'). Envie para buscar a próxima página.",
+     *         @OA\Schema(type="string", nullable=true)
      *     ),
      *     @OA\Response(
      *         response=200,
-     *         description="Paginated feed",
+     *         description="Feed paginado por cursor",
      *         @OA\JsonContent(
      *             type="object",
      *             @OA\Property(
@@ -39,24 +42,16 @@ class FeedController extends Controller
      *                 @OA\Items(
      *                     type="object",
      *                     @OA\Property(property="uuid", type="string"),
-     *                     @OA\Property(property="feed_path", type="string")
+     *                     @OA\Property(property="feed_url", type="string", nullable=true),
+     *                     @OA\Property(property="published_at", type="string", format="date-time"),
+     *                     @OA\Property(property="id", type="integer")
      *                 )
      *             ),
      *             @OA\Property(
      *                 property="meta",
      *                 type="object",
-     *                 @OA\Property(property="current_page", type="integer"),
      *                 @OA\Property(property="per_page", type="integer"),
-     *                 @OA\Property(property="total", type="integer"),
-     *                 @OA\Property(property="last_page", type="integer")
-     *             ),
-     *             @OA\Property(
-     *                 property="links",
-     *                 type="object",
-     *                 @OA\Property(property="first", type="string"),
-     *                 @OA\Property(property="last", type="string"),
-     *                 @OA\Property(property="prev", type="string", nullable=true),
-     *                 @OA\Property(property="next", type="string", nullable=true)
+     *                 @OA\Property(property="next_cursor", type="string", nullable=true, description="Token base64 para buscar a próxima página; null quando não houver mais itens")
      *             )
      *         )
      *     )
