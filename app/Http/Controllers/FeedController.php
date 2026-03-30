@@ -71,7 +71,7 @@ class FeedController extends Controller
             $query = Posts::query()
                 ->where('is_published', true)
                 ->whereNotNull('feed_path')
-                ->select(['uuid', 'feed_path', 'published_at']);
+                ->select(['id','uuid', 'feed_path', 'published_at']);
 
             if ($cursor) {
                 try {

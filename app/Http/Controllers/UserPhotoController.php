@@ -8,6 +8,8 @@ use App\Services\ImageService;
 use App\Services\StorageService;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Redis;
 class UserPhotoController extends Controller
 {   
     /**
@@ -161,7 +163,19 @@ class UserPhotoController extends Controller
             throw $e;
         }
 
-        $photoResponse = $photo->fresh()->makeHidden('id');
+            // Invalida cache do topo do feed para qualquer per_page (apaga keys matching)
+            try {
+                $redis = Redis::connection();
+                $keys = $redis->keys('feed:perpage:*:cursor:start');
+                if (!empty($keys)) {
+                    foreach ($keys as $k) {
+                        $redis->del($k);
+                    }
+                }
+            } catch (\Throwable $_) {
+            }
+
+            $photoResponse = $photo->fresh()->makeHidden('id');
         return response()->json([
             'message' => 'Photo uploaded successfully.',
             'photo'   => $photoResponse,
