@@ -6,11 +6,10 @@ use App\Models\Posts;
 use Illuminate\Http\Request;
 use App\Services\ImageService;
 use App\Services\StorageService;
-use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Redis;
-class UserPhotoController extends Controller
+
+class PostController extends Controller
 {   
     /**
      * Upload a user photo.

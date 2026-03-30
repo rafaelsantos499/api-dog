@@ -2,8 +2,8 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\FirebaseAuthController;
+use App\Http\Controllers\PostController;
 use App\Http\Controllers\SocialAuthController;
-use App\Http\Controllers\UserPhotoController;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Support\Facades\Route;
 
@@ -74,10 +74,10 @@ Route::middleware('auth:sanctum')->prefix('photos')->group(function () {
      *     @OA\Parameter(name="photo", in="path", required=true, @OA\Schema(type="string"))
      * )
      */
-    Route::post('upload', [UserPhotoController::class, 'uploadPhoto']);
-    Route::get('{photo}', [UserPhotoController::class, 'show']);
-    Route::put('{photo}', [UserPhotoController::class, 'update']);
-    Route::delete('{photo}', [UserPhotoController::class, 'destroy']);
+    Route::post('upload', [PostController::class, 'uploadPhoto']);
+    Route::get('{photo}', [PostController::class, 'show']);
+    Route::put('{photo}', [PostController::class, 'update']);
+    Route::delete('{photo}', [PostController::class, 'destroy']);
 });
 
 // Public feed: paginated, most recent first
