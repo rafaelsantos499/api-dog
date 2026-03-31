@@ -385,45 +385,19 @@
                 }
             }
         },
-        "/auth/google": {
-            "get": {
+        "/photos/{photo}/like": {
+            "post": {
                 "tags": [
-                    "Auth Google"
+                    "UserPhoto"
                 ],
-                "summary": "Retorna a URL de redirecionamento para login com Google",
-                "operationId": "ed0907cd157a0f00b9b76b1f0220c96a",
-                "responses": {
-                    "200": {
-                        "description": "URL do Google OAuth",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "url": {
-                                            "type": "string",
-                                            "example": "https://accounts.google.com/o/oauth2/auth?..."
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/auth/google/callback": {
-            "get": {
-                "tags": [
-                    "Auth Google"
-                ],
-                "summary": "Callback do Google OAuth — retorna token de acesso",
-                "operationId": "d121fe67334c2ea7691b8801940dc635",
+                "summary": "Curtir uma foto",
+                "description": "Curtir uma foto (resposta rápida via Redis, persistida assincronamente)",
+                "operationId": "94cde53c18b4d38ef532a6e05fb661bc",
                 "parameters": [
                     {
-                        "name": "code",
-                        "in": "query",
-                        "description": "Código de autorização retornado pelo Google",
+                        "name": "photo",
+                        "in": "path",
+                        "description": "ID ou UUID da foto",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -432,24 +406,81 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Login com Google realizado com sucesso",
+                        "description": "Contagem atual de likes",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "properties": {
-                                        "token": {
-                                            "type": "string"
-                                        },
-                                        "user": {
-                                            "type": "object"
+                                        "likes": {
+                                            "type": "integer"
                                         }
                                     },
                                     "type": "object"
                                 }
                             }
                         }
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    },
+                    "403": {
+                        "description": "Proibido"
                     }
-                }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/photos/{photo}/unlike": {
+            "post": {
+                "tags": [
+                    "UserPhoto"
+                ],
+                "summary": "Remover like de uma foto",
+                "description": "Remover like de uma foto (resposta rápida via Redis, persistida assincronamente)",
+                "operationId": "d6cf5478ab2623d43db0f10c33dca75b",
+                "parameters": [
+                    {
+                        "name": "photo",
+                        "in": "path",
+                        "description": "ID ou UUID da foto",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Contagem atual de likes",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "likes": {
+                                            "type": "integer"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    },
+                    "403": {
+                        "description": "Proibido"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             }
         },
         "/photos/upload": {
@@ -459,7 +490,7 @@
                 ],
                 "summary": "Upload user photo",
                 "description": "Upload a user photo.",
-                "operationId": "e6e4a562028953cec523698f4dfce475",
+                "operationId": "97349b5903aa340f9ed290149fc9df70",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -585,7 +616,7 @@
                 ],
                 "summary": "Get a single user photo by ID or UUID",
                 "description": "Show a single photo.",
-                "operationId": "ff5c8a95307df67ecd7549629bd356ce",
+                "operationId": "a9763ce9fb14ccc9a5106d4ab21f8b57",
                 "parameters": [
                     {
                         "name": "photo",
@@ -682,7 +713,7 @@
                 ],
                 "summary": "Update a photo metadata",
                 "description": "Update a photo's metadata (title, description, weight, age, is_published).",
-                "operationId": "13152982dcbaf5da082c458c3bf9c2d2",
+                "operationId": "0cdccd58fe1ebec6590a886ca5bfa875",
                 "parameters": [
                     {
                         "name": "photo",
@@ -762,7 +793,7 @@
                 ],
                 "summary": "Delete a photo",
                 "description": "Delete a photo and its stored files.",
-                "operationId": "7927835810b71ea26fb7cf98d32526be",
+                "operationId": "2bf01a74aa6c46620353b3858c799a90",
                 "parameters": [
                     {
                         "name": "photo",
@@ -804,6 +835,73 @@
                     }
                 ]
             }
+        },
+        "/auth/google": {
+            "get": {
+                "tags": [
+                    "Auth Google"
+                ],
+                "summary": "Retorna a URL de redirecionamento para login com Google",
+                "operationId": "ed0907cd157a0f00b9b76b1f0220c96a",
+                "responses": {
+                    "200": {
+                        "description": "URL do Google OAuth",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "url": {
+                                            "type": "string",
+                                            "example": "https://accounts.google.com/o/oauth2/auth?..."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/google/callback": {
+            "get": {
+                "tags": [
+                    "Auth Google"
+                ],
+                "summary": "Callback do Google OAuth — retorna token de acesso",
+                "operationId": "d121fe67334c2ea7691b8801940dc635",
+                "parameters": [
+                    {
+                        "name": "code",
+                        "in": "query",
+                        "description": "Código de autorização retornado pelo Google",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Login com Google realizado com sucesso",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "token": {
+                                            "type": "string"
+                                        },
+                                        "user": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     },
     "components": {
@@ -829,12 +927,12 @@
             "description": "Auth Firebase"
         },
         {
-            "name": "Auth Google",
-            "description": "Auth Google"
-        },
-        {
             "name": "UserPhoto",
             "description": "UserPhoto"
+        },
+        {
+            "name": "Auth Google",
+            "description": "Auth Google"
         }
     ]
 }

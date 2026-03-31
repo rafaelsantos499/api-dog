@@ -78,6 +78,30 @@ Route::middleware('auth:sanctum')->prefix('photos')->group(function () {
     Route::get('{photo}', [PostController::class, 'show']);
     Route::put('{photo}', [PostController::class, 'update']);
     Route::delete('{photo}', [PostController::class, 'destroy']);
+    // Like/unlike via Redis + queued job
+    /**
+     * @OA\Post(
+     *     path="/photos/{photo}/like",
+     *     tags={"UserPhoto"},
+     *     summary="Curtir uma foto (via Redis, persistido assíncrono)",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="photo", in="path", required=true, description="ID ou UUID da foto", @OA\Schema(type="string")),
+     *     @OA\Response(response=200, description="Contagem atual de likes", @OA\JsonContent(@OA\Property(property="likes", type="integer"))),
+     * )
+     */
+    Route::post('{photo}/like', [\App\Http\Controllers\LikeController::class, 'like']);
+
+    /**
+     * @OA\Post(
+     *     path="/photos/{photo}/unlike",
+     *     tags={"UserPhoto"},
+     *     summary="Remover like de uma foto (via Redis, persistido assíncrono)",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="photo", in="path", required=true, description="ID ou UUID da foto", @OA\Schema(type="string")),
+     *     @OA\Response(response=200, description="Contagem atual de likes", @OA\JsonContent(@OA\Property(property="likes", type="integer"))),
+     * )
+     */
+    Route::post('{photo}/unlike', [\App\Http\Controllers\LikeController::class, 'unlike']);
 });
 
 // Public feed: paginated, most recent first
