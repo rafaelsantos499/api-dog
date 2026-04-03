@@ -102,12 +102,15 @@ class PostController extends Controller
         $uploaded = $request->file('photo');
 
         // Validação por IA: verifica se a imagem contém um animal de estimação
-        $validation = $petValidator->validate($uploaded);
-        if (! $validation['valid']) {
-            return response()->json([
-                'message' => 'A imagem enviada não parece conter um animal de estimação. Por favor, envie uma foto do seu pet.',
-            ], 422);
+        if (config('ai.pet_validation.enabled')) {
+            $validation = $petValidator->validate($uploaded);
+            if (! $validation['valid']) {
+                return response()->json([
+                    'message' => 'A imagem enviada não parece conter um animal de estimação. Por favor, envie uma foto do seu pet.',
+                ], 422);
+            }
         }
+
         // Obtém o usuário autenticado (rota está protegida por `auth:sanctum`)
         $user     = $request->user();
         $userId   = $user->id;
