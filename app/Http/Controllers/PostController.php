@@ -107,6 +107,7 @@ class PostController extends Controller
             if (! $validation['valid']) {
                 return response()->json([
                     'message' => 'A imagem enviada não parece conter um animal de estimação. Por favor, envie uma foto do seu pet.',
+                    'reason'  => $validation['reason'] ?: null,
                 ], 422);
             }
         }
@@ -186,7 +187,7 @@ class PostController extends Controller
 
             $photoResponse = $photo->fresh()->makeHidden('id');
         return response()->json([
-            'message' => 'Photo uploaded successfully.',
+            'message' => 'Photo uploaded successfully.' . config('ai.pet_validation.enabled'),
             'photo'   => $photoResponse,
         ], 201);
     }

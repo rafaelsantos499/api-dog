@@ -23,6 +23,8 @@ Rules:
 - Set "valid" to false if the image does not feature a pet, is blurry/unrecognizable, shows only humans without any visible pet, shows wild animals, or contains inappropriate content.
 - In "reason", briefly explain your decision in one sentence.
 
+IMPORTANT: The "reason" field MUST be written exclusively in Brazilian Portuguese (pt-BR). Do not use any other language for the "reason" field.
+
 Respond only with the structured JSON output.
 PROMPT;
     }
