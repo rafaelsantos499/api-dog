@@ -51,6 +51,7 @@ return [
         'primary'   => env('AI_PET_PRIMARY', 'openai'),
         'backup'    => env('AI_PET_BACKUP', 'gemini'),
         'fail_open' => (bool) env('AI_PET_FAIL_OPEN', true),
+        'timeout'   => (int) env('AI_PET_TIMEOUT', 15), // segundos por provider
     ],
 
     /*

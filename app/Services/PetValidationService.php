@@ -70,10 +70,13 @@ class PetValidationService
      */
     private function invoke(string $provider, \Laravel\Ai\Files\Image $attachment): array
     {
+        $timeout = (int) config('ai.pet_validation.timeout', 15);
+
         $response = PetValidationAgent::make()->prompt(
             prompt:      'Analyze the attached image.',
             attachments: [$attachment],
             provider:    $provider,
+            timeout:     $timeout,
         );
 
         // O structured output é retornado como JSON no campo text
