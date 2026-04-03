@@ -1,0 +1,76 @@
+<?php
+
+namespace App\Services;
+
+use App\Ai\Agents\PetValidationAgent;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Log;
+use Laravel\Ai\Files\Image;
+
+class PetValidationService
+{
+    /**
+     * Valida se a imagem contém um animal de estimação usando laravel/ai.
+     *
+     * Tenta o provider primário configurado em config/ai.php (pet_validation.primary).
+     * Se falhar, tenta o provider de backup (pet_validation.backup).
+     * Se ambos falharem, respeita fail_open para decidir se aprova ou rejeita.
+     *
+     * @return array{valid: bool, reason: string}
+     */
+    public function validate(UploadedFile $file): array
+    {
+        $primary   = config('ai.pet_validation.primary');
+        $backup    = config('ai.pet_validation.backup');
+        $failOpen  = (bool) config('ai.pet_validation.fail_open', true);
+
+        $attachment = Image::fromUpload($file);
+
+        // Tenta provedor primário
+        try {
+            return $this->invoke($primary, $attachment);
+        } catch (\Throwable $e) {
+            Log::warning("PetValidationService: primary [{$primary}] failed.", [
+                'error' => $e->getMessage(),
+            ]);
+        }
+
+        // Tenta provedor de backup
+        try {
+            return $this->invoke($backup, $attachment);
+        } catch (\Throwable $e) {
+            Log::warning("PetValidationService: backup [{$backup}] failed.", [
+                'error' => $e->getMessage(),
+            ]);
+        }
+
+        Log::error('PetValidationService: all providers failed.', compact('failOpen'));
+
+        return [
+            'valid'  => $failOpen,
+            'reason' => 'AI validation unavailable.',
+        ];
+    }
+
+    /**
+     * Invoca o PetValidationAgent no provider especificado com a imagem como attachment.
+     *
+     * @return array{valid: bool, reason: string}
+     */
+    private function invoke(string $provider, \Laravel\Ai\Files\Image $attachment): array
+    {
+        $response = PetValidationAgent::make()->prompt(
+            prompt:      'Analyze the attached image.',
+            attachments: [$attachment],
+            provider:    $provider,
+        );
+
+        // O structured output é retornado como JSON no campo text
+        $data = json_decode($response->text, true);
+
+        return [
+            'valid'  => (bool) ($data['valid'] ?? false),
+            'reason' => (string) ($data['reason'] ?? ''),
+        ];
+    }
+}

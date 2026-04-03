@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Posts;
 use Illuminate\Http\Request;
 use App\Services\ImageService;
+use App\Services\PetValidationService;
 use App\Services\StorageService;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Redis;
@@ -88,7 +89,7 @@ class PostController extends Controller
      *     )
      * )
      */
-    public function uploadPhoto(Request $request, ImageService $imageService, StorageService $storageService)
+    public function uploadPhoto(Request $request, ImageService $imageService, StorageService $storageService, PetValidationService $petValidator)
     {
         $request->validate([
             'photo'       => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
@@ -98,15 +99,21 @@ class PostController extends Controller
             'description' => 'nullable|string|max:2000',
         ]);
 
-        // Obtém o usuário autenticado (rota está protegida por `auth:sanctum`)
-        $user = $request->user();
-        $userId = $user->id;
-        $userUuid = $user->uuid; 
-
-        // Processa e salva as imagens em três resoluções usando Intervention Image
-        
         $uploaded = $request->file('photo');
-        $ext = 'webp';
+
+        // Validação por IA: verifica se a imagem contém um animal de estimação
+        $validation = $petValidator->validate($uploaded);
+        if (! $validation['valid']) {
+            return response()->json([
+                'message' => 'A imagem enviada não parece conter um animal de estimação. Por favor, envie uma foto do seu pet.',
+            ], 422);
+        }
+        // Obtém o usuário autenticado (rota está protegida por `auth:sanctum`)
+        $user     = $request->user();
+        $userId   = $user->id;
+        $userUuid = $user->uuid;
+
+        $ext      = 'webp';
         $basename = uniqid();
         $filename = $basename . '.' . $ext;
 
