@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Ai\Agents\PetValidationAgent;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Laravel\Ai\Files\Image;
 
@@ -19,6 +20,16 @@ class PetValidationService
      * @return array{valid: bool, reason: string}
      */
     public function validate(UploadedFile $file): array
+    {
+        $hash = md5_file($file->getRealPath());
+
+        /** @var array{valid: bool, reason: string} */
+        return Cache::remember("ai:pet:{$hash}", now()->addDays(7), function () use ($file) {
+            return $this->callProviders($file);
+        });
+    }
+
+    private function callProviders(UploadedFile $file): array
     {
         $primary   = config('ai.pet_validation.primary');
         $backup    = config('ai.pet_validation.backup');
