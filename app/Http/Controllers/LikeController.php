@@ -47,25 +47,24 @@ class LikeController extends Controller
         try {
             $redis = Redis::connection();
 
-            // se já curtiu, retorna a contagem atual
-            if ($redis->sismember($setKey, $userId)) {
+            // SADD é atômico: retorna 1 se adicionou, 0 se já era membro.
+            // Elimina a race condition entre SISMEMBER e MULTI/EXEC.
+            $added = $redis->sadd($setKey, $userId);
+
+            if ($added === 0) {
                 $current = $redis->get($countKey) ?? $photo->likes;
-                return response()->json(['likes' => (int)$current]);
+                return response()->json(['likes' => (int) $current]);
             }
 
-            // operação atômica: MULTI/EXEC
-            $redis->multi();
-            $redis->sadd($setKey, $userId);
-            $redis->incr($countKey);
-            $redis->exec();
+            $current = $redis->incr($countKey);
+            $redis->expire($setKey, 2592000); // TTL de 30 dias no set
 
             PersistLikeJob::dispatch($postId, $userId, 'like');
 
-            $current = $redis->get($countKey) ?? $photo->likes;
-            return response()->json(['likes' => (int)$current]);
+            return response()->json(['likes' => (int) $current]);
         } catch (\Throwable $e) {
             PersistLikeJob::dispatch($postId, $userId, 'like');
-            return response()->json(['likes' => (int)$photo->likes]);
+            return response()->json(['likes' => (int) $photo->likes]);
         }
     }
 
@@ -107,27 +106,28 @@ class LikeController extends Controller
         try {
             $redis = Redis::connection();
 
-            if (! $redis->sismember($setKey, $userId)) {
+            // SREM é atômico: retorna 1 se removeu, 0 se não era membro.
+            // Elimina a race condition entre SISMEMBER e MULTI/EXEC.
+            $removed = $redis->srem($setKey, $userId);
+
+            if ($removed === 0) {
                 $current = $redis->get($countKey) ?? $photo->likes;
-                return response()->json(['likes' => (int)$current]);
+                return response()->json(['likes' => (int) $current]);
             }
 
-            $redis->multi();
-            $redis->srem($setKey, $userId);
-            // decrementar sem ficar abaixo de zero
-            $new = $redis->decr($countKey);
+            // decrementa fora de MULTI: obtém o valor real pós-decremento
+            $new = (int) $redis->decr($countKey);
             if ($new < 0) {
                 $redis->set($countKey, 0);
+                $new = 0;
             }
-            $redis->exec();
 
             PersistLikeJob::dispatch($postId, $userId, 'unlike');
 
-            $current = $redis->get($countKey) ?? $photo->likes;
-            return response()->json(['likes' => (int)$current]);
+            return response()->json(['likes' => $new]);
         } catch (\Throwable $e) {
             PersistLikeJob::dispatch($postId, $userId, 'unlike');
-            return response()->json(['likes' => (int)$photo->likes]);
+            return response()->json(['likes' => (int) $photo->likes]);
         }
     }
 }

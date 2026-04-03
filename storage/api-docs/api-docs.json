@@ -334,6 +334,103 @@
                 }
             }
         },
+        "/feed/personal": {
+            "get": {
+                "tags": [
+                    "Feed"
+                ],
+                "summary": "Feed pessoal do usuário autenticado (ordenado por wager)",
+                "description": "Feed personalizado do usuário autenticado, ordenado por wager (weight).\n\nO score de ranking combina o `weight` do post com a recência (`published_at`).\nO cursor codifica `weight|id` (base64) para permitir paginação estável.",
+                "operationId": "f965f357edac0de7d2b3f4816fc28ab8",
+                "parameters": [
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Itens por página (máx 100)",
+                        "schema": {
+                            "type": "integer",
+                            "default": 15
+                        }
+                    },
+                    {
+                        "name": "cursor",
+                        "in": "query",
+                        "description": "Token opaco retornado em `meta.next_cursor`. Formato: base64('weight|id').",
+                        "schema": {
+                            "type": "string",
+                            "nullable": true
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Feed pessoal paginado por cursor",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "uuid": {
+                                                        "type": "string"
+                                                    },
+                                                    "feed_url": {
+                                                        "type": "string",
+                                                        "nullable": true
+                                                    },
+                                                    "published_at": {
+                                                        "type": "string",
+                                                        "format": "date-time"
+                                                    },
+                                                    "weight": {
+                                                        "description": "Wager score do post",
+                                                        "type": "integer"
+                                                    },
+                                                    "likes": {
+                                                        "type": "integer"
+                                                    },
+                                                    "liked": {
+                                                        "description": "Se o usuário autenticado curtiu o post",
+                                                        "type": "boolean"
+                                                    },
+                                                    "id": {
+                                                        "type": "integer"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        },
+                                        "meta": {
+                                            "properties": {
+                                                "per_page": {
+                                                    "type": "integer"
+                                                },
+                                                "next_cursor": {
+                                                    "type": "string",
+                                                    "nullable": true
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/auth/firebase": {
             "post": {
                 "tags": [

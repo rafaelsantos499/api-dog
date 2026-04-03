@@ -106,3 +106,6 @@ Route::middleware('auth:sanctum')->prefix('photos')->group(function () {
 
 // Public feed: paginated, most recent first
 Route::get('/feed', [\App\Http\Controllers\FeedController::class, 'index']);
+
+// Personal feed: authenticated, ranked by wager (weight)
+Route::middleware('auth:sanctum')->get('/feed/personal', [\App\Http\Controllers\FeedController::class, 'personal']);
