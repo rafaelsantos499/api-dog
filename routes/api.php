@@ -102,6 +102,12 @@ Route::middleware('auth:sanctum')->prefix('photos')->group(function () {
      * )
      */
     Route::post('{photo}/unlike', [\App\Http\Controllers\LikeController::class, 'unlike']);
+
+    // Comentários
+    Route::get('{post}/comments',               [\App\Http\Controllers\CommentController::class, 'index']);
+    Route::post('{post}/comments',              [\App\Http\Controllers\CommentController::class, 'store']);
+    Route::put('{post}/comments/{comment}',     [\App\Http\Controllers\CommentController::class, 'update']);
+    Route::delete('{post}/comments/{comment}',  [\App\Http\Controllers\CommentController::class, 'destroy']);
 });
 
 // Public feed: paginated, most recent first

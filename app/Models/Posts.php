@@ -53,6 +53,11 @@ class Posts extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function comments()
+    {
+        return $this->hasMany(PostComment::class, 'post_id')->latest();
+    }
+
     /**
      * usa o `uuid` para o binding de rota em vez do `id` numérico.
      */
