@@ -58,6 +58,7 @@ class PetValidationService
         Log::error('PetValidationService: all providers failed.', compact('failOpen'));
 
         return [
+            'safe'   => true,
             'valid'  => $failOpen,
             'reason' => 'AI validation unavailable.',
         ];
@@ -66,7 +67,7 @@ class PetValidationService
     /**
      * Invoca o PetValidationAgent no provider especificado com a imagem como attachment.
      *
-     * @return array{valid: bool, reason: string}
+     * @return array{safe: bool, valid: bool, reason: string}
      */
     private function invoke(string $provider, \Laravel\Ai\Files\Image $attachment): array
     {
@@ -83,6 +84,7 @@ class PetValidationService
         $data = json_decode($response->text, true);
 
         return [
+            'safe'   => (bool) ($data['safe'] ?? true),
             'valid'  => (bool) ($data['valid'] ?? false),
             'reason' => (string) ($data['reason'] ?? ''),
         ];

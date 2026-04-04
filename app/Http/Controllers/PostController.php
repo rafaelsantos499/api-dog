@@ -101,9 +101,16 @@ class PostController extends Controller
 
         $uploaded = $request->file('photo');
 
-        // Validação por IA: verifica se a imagem contém um animal de estimação
+        // Validação por IA: moderação de conteúdo + verificação de pet
         if (config('ai.pet_validation.enabled')) {
             $validation = $petValidator->validate($uploaded);
+
+            if (! $validation['safe']) {
+                return response()->json([
+                    'message' => 'A imagem enviada contém conteúdo inapropriado e não pode ser publicada.',
+                ], 422);
+            }
+
             if (! $validation['valid']) {
                 return response()->json([
                     'message' => 'A imagem enviada não parece conter um animal de estimação. Por favor, envie uma foto do seu pet.',

@@ -43,11 +43,12 @@ class PetValidationAgent implements Agent, Conversational, HasStructuredOutput, 
     }
 
     /**
-     * Saída estruturada: o modelo retorna { "valid": bool, "reason": string }
+     * Saída estruturada: o modelo retorna { "safe": bool, "valid": bool, "reason": string }
      */
     public function schema(JsonSchema $schema): array
     {
         return [
+            'safe'   => $schema->boolean()->required(),
             'valid'  => $schema->boolean()->required(),
             'reason' => $schema->string()->required(),
         ];
