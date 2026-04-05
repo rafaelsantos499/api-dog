@@ -10,7 +10,7 @@ class CommentController extends Controller
 {
     /**
      * @OA\Get(
-     *     path="/photos/{post}/comments",
+     *     path="/posts/{post}/comments",
      *     tags={"Comments"},
      *     summary="Lista comentários de um post",
      *     security={{"bearerAuth":{}}},
@@ -45,7 +45,7 @@ class CommentController extends Controller
 
     /**
      * @OA\Post(
-     *     path="/photos/{post}/comments",
+     *     path="/posts/{post}/comments",
      *     tags={"Comments"},
      *     summary="Adiciona um comentário ao post",
      *     security={{"bearerAuth":{}}},
@@ -95,7 +95,7 @@ class CommentController extends Controller
 
     /**
      * @OA\Put(
-     *     path="/photos/{post}/comments/{comment}",
+     *     path="/posts/{post}/comments/{comment}",
      *     tags={"Comments"},
      *     summary="Edita um comentário (somente o autor)",
      *     security={{"bearerAuth":{}}},
@@ -129,7 +129,7 @@ class CommentController extends Controller
 
     /**
      * @OA\Delete(
-     *     path="/photos/{post}/comments/{comment}",
+     *     path="/posts/{post}/comments/{comment}",
      *     tags={"Comments"},
      *     summary="Remove um comentário (autor ou dono do post)",
      *     security={{"bearerAuth":{}}},

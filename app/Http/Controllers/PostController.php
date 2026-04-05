@@ -16,9 +16,9 @@ class PostController extends Controller
      * Upload a user photo.
      *
      * @OA\Post(
-     *     path="/photos/upload",
-     *     tags={"UserPhoto"},
-     *     summary="Upload user photo",
+     *     path="/posts/upload",
+     *     tags={"Post"},
+     *     summary="Upload de post",
      *     security={{"bearerAuth":{}}},
      *     @OA\RequestBody(
      *         required=true,
@@ -60,11 +60,11 @@ class PostController extends Controller
      *     ),
      *     @OA\Response(
      *         response=201,
-     *         description="Photo uploaded successfully",
+     *         description="Post criado com sucesso",
      *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="Photo uploaded successfully."),
+     *             @OA\Property(property="message", type="string", example="Post uploaded successfully."),
      *             @OA\Property(
-     *                 property="photo",
+     *                 property="post",
      *                 type="object",     *                
      *                 @OA\Property(property="original_path", type="string"),
      *                 @OA\Property(property="feed_path", type="string"),
@@ -92,14 +92,14 @@ class PostController extends Controller
     public function uploadPhoto(Request $request, ImageService $imageService, StorageService $storageService, PetValidationService $petValidator)
     {
         $request->validate([
-            'photo'       => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
+            'image'       => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
             'weight'      => 'nullable|numeric|min:0',
             'age'         => 'nullable|integer|min:0',
             'title'       => 'required|string|max:255',
             'description' => 'nullable|string|max:2000',
         ]);
 
-        $uploaded = $request->file('photo');
+        $uploaded = $request->file('image');
 
         // Validação por IA: moderação de conteúdo + verificação de pet
         if (config('ai.pet_validation.enabled')) {
@@ -192,34 +192,34 @@ class PostController extends Controller
             } catch (\Throwable $_) {
             }
 
-            $photoResponse = $photo->fresh()->makeHidden('id');
+            $postResponse = $photo->fresh()->makeHidden('id');
         return response()->json([
-            'message' => 'Photo uploaded successfully.' . config('ai.pet_validation.enabled'),
-            'photo'   => $photoResponse,
+            'message' => 'Post uploaded successfully.' . config('ai.pet_validation.enabled'),
+            'post'    => $postResponse,
         ], 201);
     }
 
     /**
-     * Show a single photo.
+     * Buscar um post.
      *
      * @OA\Get(
-     *     path="/photos/{photo}",
-     *     tags={"UserPhoto"},
-     *     summary="Get a single user photo by ID or UUID",
+     *     path="/posts/{post}",
+     *     tags={"Post"},
+     *     summary="Buscar um post por ID ou UUID",
      *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
-     *         name="photo",
+     *         name="post",
      *         in="path",
      *         required=true,
-     *         description="ID ou UUID do post (photo)",
+     *         description="ID ou UUID do post",
      *         @OA\Schema(type="string")
      *     ),
      *     @OA\Response(
      *         response=200,
-     *         description="Photo found",
+     *         description="Post encontrado",
      *         @OA\JsonContent(
      *             @OA\Property(
-     *                 property="photo",
+     *                 property="post",
      *                 type="object",
      *                 @OA\Property(property="uuid", type="string"),
      *                 @OA\Property(property="user_id", type="integer"),
@@ -242,30 +242,30 @@ class PostController extends Controller
      *     ),
      *     @OA\Response(
      *         response=404,
-     *         description="Photo not found"
+     *         description="Post not found"
      *     )
      * )
      */
-    public function show(Posts $photo)
+    public function show(Posts $post)
     {
         return response()->json([
-            'photo' => $photo->makeHidden('id'),
+            'post' => $post->makeHidden('id'),
         ]);
     }
     
     /**
-     * Update a photo's metadata (title, description, weight, age, is_published).
+     * Atualizar metadados de um post.
      *
      * @OA\Put(
-     *     path="/photos/{photo}",
-     *     tags={"UserPhoto"},
-     *     summary="Update a photo metadata",
+     *     path="/posts/{post}",
+     *     tags={"Post"},
+     *     summary="Atualizar metadados de um post",
      *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
-     *         name="photo",
+     *         name="post",
      *         in="path",
      *         required=true,
-     *         description="ID or UUID of the photo",
+     *         description="ID or UUID do post",
      *         @OA\Schema(type="string")
      *     ),
      *     @OA\RequestBody(
@@ -294,7 +294,7 @@ class PostController extends Controller
      *     @OA\Response(response=422, description="Validation error")
      * )
      */
-    public function update(Request $request, Posts $photo)
+    public function update(Request $request, Posts $post)
     {
         $request->validate([
             'weight'      => 'nullable|numeric|min:0',
@@ -305,15 +305,15 @@ class PostController extends Controller
         ]);
 
         $user = $request->user();
-        if ($user->id !== $photo->user_id) {
+        if ($user->id !== $post->user_id) {
             return response()->json(['message' => 'Forbidden'], 403);
         }
 
-        $photo->update($request->only(['weight', 'age', 'title', 'description', 'is_published']));
+        $post->update($request->only(['weight', 'age', 'title', 'description', 'is_published']));
 
         return response()->json([
-            'message' => 'Photo updated successfully.',
-            'photo'   => $photo->fresh()->makeHidden('id'),
+            'message' => 'Post updated successfully.',
+            'post'    => $post->fresh()->makeHidden('id'),
         ]);
     }
    
@@ -321,15 +321,15 @@ class PostController extends Controller
      * Delete a photo and its stored files.
      *
      * @OA\Delete(
-     *     path="/photos/{photo}",
-     *     tags={"UserPhoto"},
-     *     summary="Delete a photo",
+     *     path="/posts/{post}",
+     *     tags={"Post"},
+     *     summary="Deletar um post",
      *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
-     *         name="photo",
+     *         name="post",
      *         in="path",
      *         required=true,
-     *         description="ID or UUID of the photo",
+     *         description="ID or UUID do post",
      *         @OA\Schema(type="string")
      *     ),
      *     @OA\Response(
@@ -343,17 +343,17 @@ class PostController extends Controller
      *     @OA\Response(response=404, description="Photo not found")
      * )
      */
-    public function destroy(Request $request, Posts $photo)
+    public function destroy(Request $request, Posts $post)
     {
         $user = $request->user();
-        if ($user->id !== $photo->user_id) {
+        if ($user->id !== $post->user_id) {
             return response()->json(['message' => 'Forbidden'], 403);
         }
 
         $paths = array_filter([
-            $photo->original_path,
-            $photo->feed_path,
-            $photo->thumb_path,
+            $post->original_path,
+            $post->feed_path,
+            $post->thumb_path,
         ]);
 
         foreach ($paths as $p) {
@@ -364,9 +364,9 @@ class PostController extends Controller
             }
         }
 
-        $photo->delete();
+        $post->delete();
 
-        return response()->json(['message' => 'Photo deleted successfully.']);
+        return response()->json(['message' => 'Post deleted successfully.']);
     }
               
 }

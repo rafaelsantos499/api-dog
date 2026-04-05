@@ -255,13 +255,13 @@
                 ]
             }
         },
-        "/photos/{post}/comments": {
+        "/posts/{post}/comments": {
             "get": {
                 "tags": [
                     "Comments"
                 ],
                 "summary": "Lista comentários de um post",
-                "operationId": "b0dfa4ab17434f4fad7e1f811540fc23",
+                "operationId": "00a7052dfabc2d7ba47f1f5d5d62f176",
                 "parameters": [
                     {
                         "name": "post",
@@ -334,7 +334,7 @@
                     "Comments"
                 ],
                 "summary": "Adiciona um comentário ao post",
-                "operationId": "71cb979df5ec02cb4184684d89732bfd",
+                "operationId": "98a3c321f84f38f3212cd81009382df5",
                 "parameters": [
                     {
                         "name": "post",
@@ -414,13 +414,13 @@
                 ]
             }
         },
-        "/photos/{post}/comments/{comment}": {
+        "/posts/{post}/comments/{comment}": {
             "put": {
                 "tags": [
                     "Comments"
                 ],
                 "summary": "Edita um comentário (somente o autor)",
-                "operationId": "5ec9573d3c80a921349c27a2c4230c44",
+                "operationId": "72a6bc2fba695e995290d2b69504662c",
                 "parameters": [
                     {
                         "name": "post",
@@ -479,7 +479,7 @@
                     "Comments"
                 ],
                 "summary": "Remove um comentário (autor ou dono do post)",
-                "operationId": "728d398a85cbcd15ca26457a44902ef5",
+                "operationId": "63437965df743a0706c14d87214bc89f",
                 "parameters": [
                     {
                         "name": "post",
@@ -754,19 +754,19 @@
                 }
             }
         },
-        "/photos/{photo}/like": {
+        "/posts/{post}/like": {
             "post": {
                 "tags": [
-                    "UserPhoto"
+                    "Post"
                 ],
-                "summary": "Curtir uma foto",
-                "description": "Curtir uma foto (resposta rápida via Redis, persistida assincronamente)",
-                "operationId": "94cde53c18b4d38ef532a6e05fb661bc",
+                "summary": "Curtir um post",
+                "description": "Curtir um post (resposta rápida via Redis, persistida assincronamente)",
+                "operationId": "466e3ae39106d7c67096622459c5e09b",
                 "parameters": [
                     {
-                        "name": "photo",
+                        "name": "post",
                         "in": "path",
-                        "description": "ID ou UUID da foto",
+                        "description": "ID ou UUID do post",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -803,19 +803,19 @@
                 ]
             }
         },
-        "/photos/{photo}/unlike": {
+        "/posts/{post}/unlike": {
             "post": {
                 "tags": [
-                    "UserPhoto"
+                    "Post"
                 ],
-                "summary": "Remover like de uma foto",
-                "description": "Remover like de uma foto (resposta rápida via Redis, persistida assincronamente)",
-                "operationId": "d6cf5478ab2623d43db0f10c33dca75b",
+                "summary": "Remover like de um post",
+                "description": "Remover like de um post (resposta rápida via Redis, persistida assincronamente)",
+                "operationId": "7394a22e92c3def9ca2bfe54d4db36fd",
                 "parameters": [
                     {
-                        "name": "photo",
+                        "name": "post",
                         "in": "path",
-                        "description": "ID ou UUID da foto",
+                        "description": "ID ou UUID do post",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -852,14 +852,14 @@
                 ]
             }
         },
-        "/photos/upload": {
+        "/posts/upload": {
             "post": {
                 "tags": [
-                    "UserPhoto"
+                    "Post"
                 ],
-                "summary": "Upload user photo",
+                "summary": "Upload de post",
                 "description": "Upload a user photo.",
-                "operationId": "97349b5903aa340f9ed290149fc9df70",
+                "operationId": "94e6aa000963d65bcda17584217db819",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -902,16 +902,16 @@
                 },
                 "responses": {
                     "201": {
-                        "description": "Photo uploaded successfully",
+                        "description": "Post criado com sucesso",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "properties": {
                                         "message": {
                                             "type": "string",
-                                            "example": "Photo uploaded successfully."
+                                            "example": "Post uploaded successfully."
                                         },
-                                        "photo": {
+                                        "post": {
                                             "properties": {
                                                 "original_path": {
                                                     "type": "string"
@@ -978,19 +978,19 @@
                 ]
             }
         },
-        "/photos/{photo}": {
+        "/posts/{post}": {
             "get": {
                 "tags": [
-                    "UserPhoto"
+                    "Post"
                 ],
-                "summary": "Get a single user photo by ID or UUID",
-                "description": "Show a single photo.",
-                "operationId": "a9763ce9fb14ccc9a5106d4ab21f8b57",
+                "summary": "Buscar um post por ID ou UUID",
+                "description": "Buscar um post.",
+                "operationId": "19d7b55d7d5efd7bc27ed7c01d74ca95",
                 "parameters": [
                     {
-                        "name": "photo",
+                        "name": "post",
                         "in": "path",
-                        "description": "ID ou UUID do post (photo)",
+                        "description": "ID ou UUID do post",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -999,12 +999,12 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Photo found",
+                        "description": "Post encontrado",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "properties": {
-                                        "photo": {
+                                        "post": {
                                             "properties": {
                                                 "uuid": {
                                                     "type": "string"
@@ -1067,7 +1067,7 @@
                         }
                     },
                     "404": {
-                        "description": "Photo not found"
+                        "description": "Post not found"
                     }
                 },
                 "security": [
@@ -1078,16 +1078,16 @@
             },
             "put": {
                 "tags": [
-                    "UserPhoto"
+                    "Post"
                 ],
-                "summary": "Update a photo metadata",
-                "description": "Update a photo's metadata (title, description, weight, age, is_published).",
-                "operationId": "0cdccd58fe1ebec6590a886ca5bfa875",
+                "summary": "Atualizar metadados de um post",
+                "description": "Atualizar metadados de um post.",
+                "operationId": "97ae61bfc5c99543e90d6f4136332c12",
                 "parameters": [
                     {
-                        "name": "photo",
+                        "name": "post",
                         "in": "path",
-                        "description": "ID or UUID of the photo",
+                        "description": "ID or UUID do post",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -1158,16 +1158,16 @@
             },
             "delete": {
                 "tags": [
-                    "UserPhoto"
+                    "Post"
                 ],
-                "summary": "Delete a photo",
+                "summary": "Deletar um post",
                 "description": "Delete a photo and its stored files.",
-                "operationId": "2bf01a74aa6c46620353b3858c799a90",
+                "operationId": "f5991cc3c6e9a5fcb5b97135fbe27b0c",
                 "parameters": [
                     {
-                        "name": "photo",
+                        "name": "post",
                         "in": "path",
-                        "description": "ID or UUID of the photo",
+                        "description": "ID or UUID do post",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -1300,8 +1300,8 @@
             "description": "Auth Firebase"
         },
         {
-            "name": "UserPhoto",
-            "description": "UserPhoto"
+            "name": "Post",
+            "description": "Post"
         },
         {
             "name": "Auth Google",

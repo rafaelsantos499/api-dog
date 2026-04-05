@@ -41,69 +41,154 @@ Route::prefix('auth')->group(function () {
     });
 });
 
-Route::middleware('auth:sanctum')->prefix('photos')->group(function () {
+Route::middleware('auth:sanctum')->prefix('posts')->group(function () {
     /**
      * @OA\Post(
-     *     path="/photos/upload",
-     *     tags={"UserPhoto"},
+     *     path="/posts/upload",
+     *     tags={"Post"},
      *     summary="Upload user photos (original, feed, thumb)",
      *     security={{"bearerAuth":{}}}
      * )
      *
      * @OA\Get(
-     *     path="/photos/{photo}",
-     *     tags={"UserPhoto"},
-     *     summary="Get a single user photo by ID or UUID",
+     *     path="/posts/{post}",
+     *     tags={"Post"},
+     *     summary="Get a single post by ID or UUID",
      *     security={{"bearerAuth":{}}},
-     *     @OA\Parameter(name="photo", in="path", required=true, @OA\Schema(type="string"))
+     *     @OA\Parameter(name="post", in="path", required=true, @OA\Schema(type="string"))
      * )
      *
      * @OA\Put(
-     *     path="/photos/{photo}",
-     *     tags={"UserPhoto"},
-     *     summary="Update a photo metadata",
+     *     path="/posts/{post}",
+     *     tags={"Post"},
+     *     summary="Update post metadata",
      *     security={{"bearerAuth":{}}},
-     *     @OA\Parameter(name="photo", in="path", required=true, @OA\Schema(type="string"))
+     *     @OA\Parameter(name="post", in="path", required=true, @OA\Schema(type="string"))
      * )
      *
      * @OA\Delete(
-     *     path="/photos/{photo}",
-     *     tags={"UserPhoto"},
-     *     summary="Delete a photo",
+     *     path="/posts/{post}",
+     *     tags={"Post"},
+     *     summary="Delete a post",
      *     security={{"bearerAuth":{}}},
-     *     @OA\Parameter(name="photo", in="path", required=true, @OA\Schema(type="string"))
+     *     @OA\Parameter(name="post", in="path", required=true, @OA\Schema(type="string"))
      * )
      */
     Route::post('upload', [PostController::class, 'uploadPhoto']);
-    Route::get('{photo}', [PostController::class, 'show']);
-    Route::put('{photo}', [PostController::class, 'update']);
-    Route::delete('{photo}', [PostController::class, 'destroy']);
+    Route::get('{post}', [PostController::class, 'show']);
+    Route::put('{post}', [PostController::class, 'update']);
+    Route::delete('{post}', [PostController::class, 'destroy']);
     // Like/unlike via Redis + queued job
     /**
      * @OA\Post(
-     *     path="/photos/{photo}/like",
-     *     tags={"UserPhoto"},
-     *     summary="Curtir uma foto (via Redis, persistido assíncrono)",
+     *     path="/posts/{post}/like",
+     *     tags={"Post"},
+     *     summary="Curtir um post (via Redis, persistido assíncrono)",
      *     security={{"bearerAuth":{}}},
-     *     @OA\Parameter(name="photo", in="path", required=true, description="ID ou UUID da foto", @OA\Schema(type="string")),
+     *     @OA\Parameter(name="post", in="path", required=true, description="ID ou UUID do post", @OA\Schema(type="string")),
      *     @OA\Response(response=200, description="Contagem atual de likes", @OA\JsonContent(@OA\Property(property="likes", type="integer"))),
      * )
      */
-    Route::post('{photo}/like', [\App\Http\Controllers\LikeController::class, 'like']);
+    Route::post('{post}/like', [\App\Http\Controllers\LikeController::class, 'like']);
 
     /**
      * @OA\Post(
-     *     path="/photos/{photo}/unlike",
-     *     tags={"UserPhoto"},
-     *     summary="Remover like de uma foto (via Redis, persistido assíncrono)",
+     *     path="/posts/{post}/unlike",
+     *     tags={"Post"},
+     *     summary="Remover like de um post (via Redis, persistido assíncrono)",
      *     security={{"bearerAuth":{}}},
-     *     @OA\Parameter(name="photo", in="path", required=true, description="ID ou UUID da foto", @OA\Schema(type="string")),
+     *     @OA\Parameter(name="post", in="path", required=true, description="ID ou UUID do post", @OA\Schema(type="string")),
      *     @OA\Response(response=200, description="Contagem atual de likes", @OA\JsonContent(@OA\Property(property="likes", type="integer"))),
      * )
      */
-    Route::post('{photo}/unlike', [\App\Http\Controllers\LikeController::class, 'unlike']);
+    Route::post('{post}/unlike', [\App\Http\Controllers\LikeController::class, 'unlike']);
 
     // Comentários
+    /**
+     * @OA\Get(
+     *     path="/posts/{post}/comments",
+     *     tags={"Comments"},
+     *     summary="Lista comentários de um post",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="post", in="path", required=true, description="UUID do post", @OA\Schema(type="string")),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Lista paginada de comentários",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="data", type="array", @OA\Items(
+     *                 @OA\Property(property="id", type="integer"),
+     *                 @OA\Property(property="body", type="string"),
+     *                 @OA\Property(property="created_at", type="string", format="date-time"),
+     *                 @OA\Property(property="user", type="object",
+     *                     @OA\Property(property="id", type="integer"),
+     *                     @OA\Property(property="name", type="string"),
+     *                     @OA\Property(property="uuid", type="string")
+     *                 )
+     *             )),
+     *             @OA\Property(property="next_cursor", type="string", nullable=true)
+     *         )
+     *     )
+     * )
+     *
+     * @OA\Post(
+     *     path="/posts/{post}/comments",
+     *     tags={"Comments"},
+     *     summary="Adiciona um comentário ao post",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="post", in="path", required=true, description="UUID do post", @OA\Schema(type="string")),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"body"},
+     *             @OA\Property(property="body", type="string", maxLength=1000, example="Que pet lindo!")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="Comentário criado",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="id", type="integer"),
+     *             @OA\Property(property="body", type="string"),
+     *             @OA\Property(property="created_at", type="string", format="date-time"),
+     *             @OA\Property(property="user", type="object",
+     *                 @OA\Property(property="id", type="integer"),
+     *                 @OA\Property(property="name", type="string"),
+     *                 @OA\Property(property="uuid", type="string")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(response=422, description="Validação falhou")
+     * )
+     *
+     * @OA\Put(
+     *     path="/posts/{post}/comments/{comment}",
+     *     tags={"Comments"},
+     *     summary="Edita um comentário (somente o autor)",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="post", in="path", required=true, description="UUID do post", @OA\Schema(type="string")),
+     *     @OA\Parameter(name="comment", in="path", required=true, description="ID do comentário", @OA\Schema(type="integer")),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"body"},
+     *             @OA\Property(property="body", type="string", maxLength=1000)
+     *         )
+     *     ),
+     *     @OA\Response(response=200, description="Comentário atualizado"),
+     *     @OA\Response(response=403, description="Não autorizado")
+     * )
+     *
+     * @OA\Delete(
+     *     path="/posts/{post}/comments/{comment}",
+     *     tags={"Comments"},
+     *     summary="Remove um comentário (autor ou dono do post)",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="post", in="path", required=true, description="UUID do post", @OA\Schema(type="string")),
+     *     @OA\Parameter(name="comment", in="path", required=true, description="ID do comentário", @OA\Schema(type="integer")),
+     *     @OA\Response(response=200, description="Comentário removido", @OA\JsonContent(@OA\Property(property="message", type="string"))),
+     *     @OA\Response(response=403, description="Não autorizado")
+     * )
+     */
     Route::get('{post}/comments',               [\App\Http\Controllers\CommentController::class, 'index']);
     Route::post('{post}/comments',              [\App\Http\Controllers\CommentController::class, 'store']);
     Route::put('{post}/comments/{comment}',     [\App\Http\Controllers\CommentController::class, 'update']);

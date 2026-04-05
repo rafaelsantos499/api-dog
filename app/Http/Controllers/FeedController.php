@@ -297,7 +297,7 @@ class FeedController extends Controller
             $redis   = Redis::connection();
             $results = $redis->pipeline(function ($pipe) use ($postIds, $userId) {
                 foreach ($postIds as $pid) {
-                    $pipe->sismember("photo:{$pid}:liked_by", $userId);
+                    $pipe->sismember("post:{$pid}:liked_by", $userId);
                 }
             });
             foreach ($postIds as $i => $pid) {

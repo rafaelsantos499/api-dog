@@ -47,7 +47,7 @@ class PersistLikeJob implements ShouldQueue
             DB::table('posts')->where('id', $this->postId)->update(['likes' => $count]);
 
             try {
-                Redis::connection()->set("photo:{$this->postId}:likes_count", $count);
+                Redis::connection()->set("post:{$this->postId}:likes_count", $count);
             } catch (\Throwable $_) {
                 // ignora erros do Redis
             }

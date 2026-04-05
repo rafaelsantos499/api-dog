@@ -10,18 +10,18 @@ use Illuminate\Support\Facades\Redis;
 class LikeController extends Controller
 {
     /**
-     * Curtir uma foto (resposta rápida via Redis, persistida assincronamente)
+     * Curtir um post (resposta rápida via Redis, persistida assincronamente)
      *
      * @OA\Post(
-     *     path="/photos/{photo}/like",
-     *     tags={"UserPhoto"},
-     *     summary="Curtir uma foto",
+     *     path="/posts/{post}/like",
+     *     tags={"Post"},
+     *     summary="Curtir um post",
      *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
-     *         name="photo",
+     *         name="post",
      *         in="path",
      *         required=true,
-     *         description="ID ou UUID da foto",
+     *         description="ID ou UUID do post",
      *         @OA\Schema(type="string")
      *     ),
      *     @OA\Response(
@@ -35,14 +35,14 @@ class LikeController extends Controller
      *     @OA\Response(response=403, description="Proibido")
      * )
      */
-    public function like(Request $request, Posts $photo)
+    public function like(Request $request, Posts $post)
     {
         $user = $request->user();
         $userId = $user->id;
-        $postId = $photo->id;
+        $postId = $post->id;
 
-        $setKey = "photo:{$postId}:liked_by";
-        $countKey = "photo:{$postId}:likes_count";
+        $setKey = "post:{$postId}:liked_by";
+        $countKey = "post:{$postId}:likes_count";
 
         try {
             $redis = Redis::connection();
@@ -52,7 +52,7 @@ class LikeController extends Controller
             $added = $redis->sadd($setKey, $userId);
 
             if ($added === 0) {
-                $current = $redis->get($countKey) ?? $photo->likes;
+                $current = $redis->get($countKey) ?? $post->likes;
                 return response()->json(['likes' => (int) $current]);
             }
 
@@ -64,23 +64,23 @@ class LikeController extends Controller
             return response()->json(['likes' => (int) $current]);
         } catch (\Throwable $e) {
             PersistLikeJob::dispatch($postId, $userId, 'like');
-            return response()->json(['likes' => (int) $photo->likes]);
+            return response()->json(['likes' => (int) $post->likes]);
         }
     }
 
     /**
-     * Remover like de uma foto (resposta rápida via Redis, persistida assincronamente)
+     * Remover like de um post (resposta rápida via Redis, persistida assincronamente)
      *
      * @OA\Post(
-     *     path="/photos/{photo}/unlike",
-     *     tags={"UserPhoto"},
-     *     summary="Remover like de uma foto",
+     *     path="/posts/{post}/unlike",
+     *     tags={"Post"},
+     *     summary="Remover like de um post",
      *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
-     *         name="photo",
+     *         name="post",
      *         in="path",
      *         required=true,
-     *         description="ID ou UUID da foto",
+     *         description="ID ou UUID do post",
      *         @OA\Schema(type="string")
      *     ),
      *     @OA\Response(
@@ -94,14 +94,14 @@ class LikeController extends Controller
      *     @OA\Response(response=403, description="Proibido")
      * )
      */
-    public function unlike(Request $request, Posts $photo)
+    public function unlike(Request $request, Posts $post)
     {
         $user = $request->user();
         $userId = $user->id;
-        $postId = $photo->id;
+        $postId = $post->id;
 
-        $setKey = "photo:{$postId}:liked_by";
-        $countKey = "photo:{$postId}:likes_count";
+        $setKey = "post:{$postId}:liked_by";
+        $countKey = "post:{$postId}:likes_count";
 
         try {
             $redis = Redis::connection();
@@ -111,7 +111,7 @@ class LikeController extends Controller
             $removed = $redis->srem($setKey, $userId);
 
             if ($removed === 0) {
-                $current = $redis->get($countKey) ?? $photo->likes;
+                $current = $redis->get($countKey) ?? $post->likes;
                 return response()->json(['likes' => (int) $current]);
             }
 
@@ -127,7 +127,7 @@ class LikeController extends Controller
             return response()->json(['likes' => $new]);
         } catch (\Throwable $e) {
             PersistLikeJob::dispatch($postId, $userId, 'unlike');
-            return response()->json(['likes' => (int) $photo->likes]);
+            return response()->json(['likes' => (int) $post->likes]);
         }
     }
 }
