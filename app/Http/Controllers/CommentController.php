@@ -37,7 +37,7 @@ class CommentController extends Controller
     public function index(Posts $post, Request $request)
     {
         $comments = $post->comments()
-            ->with('user:id,name,uuid')
+            ->with('user:id,uuid,name')
             ->cursorPaginate(20);
 
         return response()->json($comments);
@@ -88,7 +88,7 @@ class CommentController extends Controller
         $post->increment('comments_count');
 
         return response()->json(
-            $comment->load('user:id,name,uuid'),
+            $comment->load('user:id,uuid,name'),
             201
         );
     }

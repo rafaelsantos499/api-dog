@@ -17,6 +17,13 @@ class PostComment extends Model
         'body',
     ];
 
+    protected $hidden = [
+        'id',
+        'post_id',
+        'user_id',
+        'deleted_at',
+    ];
+
     public function post()
     {
         return $this->belongsTo(Posts::class, 'post_id');
