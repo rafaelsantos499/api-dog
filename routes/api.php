@@ -166,7 +166,7 @@ Route::middleware('auth:sanctum')->prefix('posts')->group(function () {
      *     summary="Edita um comentário (somente o autor)",
      *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(name="post", in="path", required=true, description="UUID do post", @OA\Schema(type="string")),
-     *     @OA\Parameter(name="comment", in="path", required=true, description="ID do comentário", @OA\Schema(type="integer")),
+     *     @OA\Parameter(name="comment", in="path", required=true, description="UUID do comentário", @OA\Schema(type="string")),
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
@@ -184,7 +184,7 @@ Route::middleware('auth:sanctum')->prefix('posts')->group(function () {
      *     summary="Remove um comentário (autor ou dono do post)",
      *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(name="post", in="path", required=true, description="UUID do post", @OA\Schema(type="string")),
-     *     @OA\Parameter(name="comment", in="path", required=true, description="ID do comentário", @OA\Schema(type="integer")),
+     *     @OA\Parameter(name="comment", in="path", required=true, description="UUID do comentário", @OA\Schema(type="string")),
      *     @OA\Response(response=200, description="Comentário removido", @OA\JsonContent(@OA\Property(property="message", type="string"))),
      *     @OA\Response(response=403, description="Não autorizado")
      * )

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Str;
 
 class PostComment extends Model
 {
@@ -23,6 +24,26 @@ class PostComment extends Model
         'user_id',
         'deleted_at',
     ];
+
+    protected $casts = [
+        'uuid' => 'string',
+    ];
+
+    protected static function boot(): void
+    {
+        parent::boot();
+
+        static::creating(function (self $comment) {
+            if (empty($comment->uuid)) {
+                $comment->uuid = (string) Str::uuid();
+            }
+        });
+    }
+
+    public function getRouteKeyName(): string
+    {
+        return 'uuid';
+    }
 
     public function post()
     {

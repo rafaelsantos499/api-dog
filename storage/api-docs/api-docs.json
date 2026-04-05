@@ -284,8 +284,8 @@
                                             "type": "array",
                                             "items": {
                                                 "properties": {
-                                                    "id": {
-                                                        "type": "integer"
+                                                    "uuid": {
+                                                        "type": "string"
                                                     },
                                                     "body": {
                                                         "type": "string"
@@ -296,13 +296,10 @@
                                                     },
                                                     "user": {
                                                         "properties": {
-                                                            "id": {
-                                                                "type": "integer"
-                                                            },
-                                                            "name": {
+                                                            "uuid": {
                                                                 "type": "string"
                                                             },
-                                                            "uuid": {
+                                                            "name": {
                                                                 "type": "string"
                                                             }
                                                         },
@@ -373,8 +370,8 @@
                             "application/json": {
                                 "schema": {
                                     "properties": {
-                                        "id": {
-                                            "type": "integer"
+                                        "uuid": {
+                                            "type": "string"
                                         },
                                         "body": {
                                             "type": "string"
@@ -385,13 +382,10 @@
                                         },
                                         "user": {
                                             "properties": {
-                                                "id": {
-                                                    "type": "integer"
-                                                },
-                                                "name": {
+                                                "uuid": {
                                                     "type": "string"
                                                 },
-                                                "uuid": {
+                                                "name": {
                                                     "type": "string"
                                                 }
                                             },
@@ -434,10 +428,10 @@
                     {
                         "name": "comment",
                         "in": "path",
-                        "description": "ID do comentário",
+                        "description": "UUID do comentário",
                         "required": true,
                         "schema": {
-                            "type": "integer"
+                            "type": "string"
                         }
                     }
                 ],
@@ -493,10 +487,10 @@
                     {
                         "name": "comment",
                         "in": "path",
-                        "description": "ID do comentário",
+                        "description": "UUID do comentário",
                         "required": true,
                         "schema": {
-                            "type": "integer"
+                            "type": "string"
                         }
                     }
                 ],

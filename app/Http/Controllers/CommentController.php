@@ -20,13 +20,12 @@ class CommentController extends Controller
      *         description="Lista paginada de comentários",
      *         @OA\JsonContent(
      *             @OA\Property(property="data", type="array", @OA\Items(
-     *                 @OA\Property(property="id", type="integer"),
+     *                 @OA\Property(property="uuid", type="string"),
      *                 @OA\Property(property="body", type="string"),
      *                 @OA\Property(property="created_at", type="string", format="date-time"),
      *                 @OA\Property(property="user", type="object",
-     *                     @OA\Property(property="id", type="integer"),
-     *                     @OA\Property(property="name", type="string"),
-     *                     @OA\Property(property="uuid", type="string")
+     *                     @OA\Property(property="uuid", type="string"),
+     *                     @OA\Property(property="name", type="string")
      *                 )
      *             )),
      *             @OA\Property(property="next_cursor", type="string", nullable=true)
@@ -61,13 +60,12 @@ class CommentController extends Controller
      *         response=201,
      *         description="Comentário criado",
      *         @OA\JsonContent(
-     *             @OA\Property(property="id", type="integer"),
+     *             @OA\Property(property="uuid", type="string"),
      *             @OA\Property(property="body", type="string"),
      *             @OA\Property(property="created_at", type="string", format="date-time"),
      *             @OA\Property(property="user", type="object",
-     *                 @OA\Property(property="id", type="integer"),
-     *                 @OA\Property(property="name", type="string"),
-     *                 @OA\Property(property="uuid", type="string")
+     *                 @OA\Property(property="uuid", type="string"),
+     *                 @OA\Property(property="name", type="string")
      *             )
      *         )
      *     ),
@@ -100,7 +98,7 @@ class CommentController extends Controller
      *     summary="Edita um comentário (somente o autor)",
      *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(name="post", in="path", required=true, description="UUID do post", @OA\Schema(type="string")),
-     *     @OA\Parameter(name="comment", in="path", required=true, description="ID do comentário", @OA\Schema(type="integer")),
+     *     @OA\Parameter(name="comment", in="path", required=true, description="UUID do comentário", @OA\Schema(type="string")),
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
@@ -134,7 +132,7 @@ class CommentController extends Controller
      *     summary="Remove um comentário (autor ou dono do post)",
      *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(name="post", in="path", required=true, description="UUID do post", @OA\Schema(type="string")),
-     *     @OA\Parameter(name="comment", in="path", required=true, description="ID do comentário", @OA\Schema(type="integer")),
+     *     @OA\Parameter(name="comment", in="path", required=true, description="UUID do comentário", @OA\Schema(type="string")),
      *     @OA\Response(response=200, description="Comentário removido", @OA\JsonContent(@OA\Property(property="message", type="string"))),
      *     @OA\Response(response=403, description="Não autorizado")
      * )
