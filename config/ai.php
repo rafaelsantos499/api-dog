@@ -56,6 +56,31 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Validação de comentários (failover)
+    |--------------------------------------------------------------------------
+    |
+    | Mesma ideia da validação de pets: provedor primário + backup e
+    | comportamento `fail_open` quando ambos falharem.
+    |
+    */
+    'comment_validation' => [
+        'enabled'   => (bool) env('AI_COMMENT_VALIDATION_ENABLED', true),
+        'primary'   => env('AI_COMMENT_PRIMARY', 'openai'),
+        'backup'    => env('AI_COMMENT_BACKUP', 'gemini'),
+        'fail_open' => (bool) env('AI_COMMENT_FAIL_OPEN', true),
+        'timeout'   => (int) env('AI_COMMENT_TIMEOUT', 10), // segundos por provider
+        'block_threshold' => (int) env('AI_COMMENT_BLOCK_THRESHOLD', 70), // score(0-100) a partir do qual bloqueamos
+        // Rate-limit / timeout after multiple blocked comments
+        'window_minutes'   => (int) env('AI_COMMENT_WINDOW_MINUTES', 60),
+        'max_blocked'      => (int) env('AI_COMMENT_MAX_BLOCKED', 5),
+        'timeout_minutes'  => (int) env('AI_COMMENT_TIMEOUT_MINUTES', 30),
+        // Rate-limit for VALID comments (prevent spamming even when allowed)
+        'comments_window_minutes' => (int) env('AI_COMMENT_COMMENTS_WINDOW_MINUTES', 60),
+        'max_comments' => (int) env('AI_COMMENT_MAX_COMMENTS', 30),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | AI Providers
     |--------------------------------------------------------------------------
     |
