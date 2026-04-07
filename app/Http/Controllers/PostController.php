@@ -2,13 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\PersistViewJob;
 use App\Models\Posts;
 use Illuminate\Http\Request;
 use App\Services\ImageService;
 use App\Services\PetValidationService;
 use App\Services\StorageService;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Redis;
+use Illuminate\Support\Facades\Storage;
 
 class PostController extends Controller
 {   
@@ -246,8 +247,31 @@ class PostController extends Controller
      *     )
      * )
      */
-    public function show(Posts $post)
+    public function show(Request $request, Posts $post)
     {
+        $userId = $request->user()->id;
+        $postId = $post->id;
+
+        $setKey   = "post:{$postId}:viewed_by";
+        $countKey = "post:{$postId}:views_count";
+
+        try {
+            $redis = Redis::connection();
+            $added = $redis->sadd($setKey, $userId);
+
+            if ($added === 1) {
+                $currentViews = $redis->incr($countKey);
+                $redis->expire($setKey, 2592000);
+                PersistViewJob::dispatch($postId, $userId);
+            } else {
+                $currentViews = $redis->get($countKey) ?? $post->views;
+            }
+
+            $post->views = (int) $currentViews;
+        } catch (\Throwable $e) {
+            PersistViewJob::dispatch($postId, $userId);
+        }
+
         return response()->json([
             'post' => $post->makeHidden('id'),
         ]);
