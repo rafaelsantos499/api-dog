@@ -249,7 +249,7 @@ class PostController extends Controller
      */
     public function show(Request $request, Posts $post)
     {
-        $userId = $request->user()->id;
+        $user   = $request->user();
         $postId = $post->id;
 
         $setKey   = "post:{$postId}:viewed_by";
@@ -257,19 +257,26 @@ class PostController extends Controller
 
         try {
             $redis = Redis::connection();
-            $added = $redis->sadd($setKey, $userId);
 
-            if ($added === 1) {
-                $currentViews = $redis->incr($countKey);
-                $redis->expire($setKey, 2592000);
-                PersistViewJob::dispatch($postId, $userId);
+            if ($user) {
+                $added = $redis->sadd($setKey, $user->id);
+
+                if ($added === 1) {
+                    $currentViews = $redis->incr($countKey);
+                    $redis->expire($setKey, 2592000);
+                    PersistViewJob::dispatch($postId, $user->id);
+                } else {
+                    $currentViews = $redis->get($countKey) ?? $post->views;
+                }
             } else {
                 $currentViews = $redis->get($countKey) ?? $post->views;
             }
 
             $post->views = (int) $currentViews;
         } catch (\Throwable $e) {
-            PersistViewJob::dispatch($postId, $userId);
+            if ($user) {
+                PersistViewJob::dispatch($postId, $user->id);
+            }
         }
 
         return response()->json([

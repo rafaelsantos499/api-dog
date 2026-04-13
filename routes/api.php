@@ -75,7 +75,7 @@ Route::middleware('auth:sanctum')->prefix('posts')->group(function () {
      * )
      */
     Route::post('upload', [PostController::class, 'uploadPhoto']);
-    Route::get('{post}', [PostController::class, 'show']);
+    
     Route::put('{post}', [PostController::class, 'update']);
     Route::delete('{post}', [PostController::class, 'destroy']);
     // Like/unlike via Redis + queued job
@@ -189,7 +189,6 @@ Route::middleware('auth:sanctum')->prefix('posts')->group(function () {
      *     @OA\Response(response=403, description="Não autorizado")
      * )
      */
-    Route::get('{post}/comments',               [\App\Http\Controllers\CommentController::class, 'index']);
     Route::post('{post}/comments',              [\App\Http\Controllers\CommentController::class, 'store']);
     Route::put('{post}/comments/{comment}',     [\App\Http\Controllers\CommentController::class, 'update']);
     Route::delete('{post}/comments/{comment}',  [\App\Http\Controllers\CommentController::class, 'destroy']);
@@ -197,6 +196,11 @@ Route::middleware('auth:sanctum')->prefix('posts')->group(function () {
 
 // Public feed: paginated, most recent first
 Route::get('/feed', [\App\Http\Controllers\FeedController::class, 'index']);
-
 // Personal feed: authenticated, ranked by wager (weight)
 Route::middleware('auth:sanctum')->get('/feed/personal', [\App\Http\Controllers\FeedController::class, 'personal']);
+
+// Public post routes (no auth required)
+Route::prefix('posts')->group(function () {
+    Route::get('{post}', [PostController::class, 'show']);
+    Route::get('{post}/comments', [\App\Http\Controllers\CommentController::class, 'index']);
+});
